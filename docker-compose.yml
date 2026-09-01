@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: build-wise-db
+    environment:
+      POSTGRES_DB: build-wise
+      POSTGRES_USER: build_user
+      POSTGRES_PASSWORD: build_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - build_pg_data:/var/lib/postgresql/data
+
+volumes:
+  build_pg_data:

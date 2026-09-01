@@ -1,0 +1,54 @@
+### Kreiraj kategoriju
+POST http://localhost:8080/api/categories
+Content-Type: application/json
+
+{
+  "name": "Temelji",
+  "plannedBudget": 15000
+}
+
+### Dohvati sve kategorije
+GET http://localhost:8080/api/categories
+
+### Kreiraj subkategoriju (promijeni categoryId prema ID-u iz odgovora gore)
+POST http://localhost:8080/api/subcategories
+Content-Type: application/json
+
+{
+  "categoryId": 1,
+  "name": "Iskop",
+  "plannedBudget": 3000
+}
+
+### Kreiraj expense
+POST http://localhost:8080/api/expenses
+Content-Type: application/json
+
+{
+  "categoryId": 1,
+  "subcategoryId": 1,
+  "name": "Bager za iskop",
+  "amount": 2800,
+  "date": "2026-08-14",
+  "status": "PAID",
+  "vendor": "Iskopi d.o.o.",
+  "note": "3 dana rada"
+}
+
+### Dohvati sve expense-e
+GET http://localhost:8080/api/expenses
+
+### Dohvati expense-e po kategoriji
+GET http://localhost:8080/api/expenses?categoryId=1
+
+### Update kategorije
+PUT http://localhost:8080/api/categories/1
+Content-Type: application/json
+
+{
+  "name": "Temelji i iskop",
+  "plannedBudget": 16000
+}
+
+### Obriši expense
+DELETE http://localhost:8080/api/expenses/1
