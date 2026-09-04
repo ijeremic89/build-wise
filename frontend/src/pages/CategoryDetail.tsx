@@ -1,31 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-    Avatar,
-    Typography,
-    Spin,
-    Alert,
-    Statistic,
-    Progress,
-    Row,
-    Col,
-    List,
-    Button,
-    Modal,
-    Form,
-    Input,
-    InputNumber,
-    Space,
-    App as AntApp,
-} from 'antd';
-import { ArrowLeftOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Spin, Alert, Modal, Form, Input, InputNumber, Button, App as AntApp } from 'antd';
 import { categoriesApi, subcategoriesApi } from '../api/categories';
 import { expensesApi } from '../api/expenses';
 import type { CategoryRequest, Subcategory, SubcategoryRequest } from '../types';
-import { iconForCategory } from '../utils/categoryIcons';
-
-const { Title, Paragraph, Text } = Typography;
+import { CategoryIcon } from '../components/CategoryIcon';
 
 function CategoryDetail() {
     const { id } = useParams();
@@ -95,9 +75,7 @@ function CategoryDetail() {
 
     const deleteSubMutation = useMutation({
         mutationFn: (subId: number) => subcategoriesApi.delete(subId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-        },
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
         onError: () => message.error('Greška pri brisanju podkategorije.'),
     });
 
@@ -110,7 +88,8 @@ function CategoryDetail() {
         .reduce((sum, e) => sum + e.amount, 0);
 
     const plannedBudget = category.plannedBudget ?? 0;
-    const percent = plannedBudget > 0 ? Math.round((spent / plannedBudget) * 100) : 0;
+    const percent = plannedBudget > 0 ? Math.min(100, Math.round((spent / plannedBudget) * 100)) : 0;
+    const isOver = plannedBudget > 0 && spent > plannedBudget;
 
     const openEdit = () => {
         editForm.setFieldsValue({
@@ -181,76 +160,80 @@ function CategoryDetail() {
     };
 
     return (
-        <div style={{ textAlign: 'left', maxWidth: 640, margin: '0 auto' }}>
-            <Link to="/categories">
-                <ArrowLeftOutlined /> Natrag na kategorije
+        <div>
+            <Link className="nc-back" to="/categories">
+                &larr; Natrag na kategorije
             </Link>
 
-            <Row align="middle" gutter={16} style={{ marginTop: 16 }}>
-                <Col>
-                    <Avatar size={56} style={{ backgroundColor: 'var(--accent-bg)', fontSize: 28 }}>
-                        {iconForCategory(category.name)}
-                    </Avatar>
-                </Col>
-                <Col flex="auto">
-                    <Title level={2} style={{ margin: 0 }}>{category.name}</Title>
-                </Col>
-                <Col>
-                    <Space>
-                        <Button icon={<EditOutlined />} onClick={openEdit}>Uredi</Button>
-                        <Button icon={<DeleteOutlined />} danger onClick={handleDelete} loading={deleteMutation.isPending}>
+            <div className="nc-detail" style={{ marginTop: 16 }}>
+                <div className="nc-detail-head">
+                    <span className="nc-tile-icon">
+                        <CategoryIcon name={category.name} />
+                    </span>
+                    <h1>{category.name}</h1>
+                    <div className="actions">
+                        <Button className="nc-btn" onClick={openEdit}>
+                            Uredi
+                        </Button>
+                        <Button
+                            className="nc-btn nc-btn-danger"
+                            onClick={handleDelete}
+                            loading={deleteMutation.isPending}
+                        >
                             Obriši
                         </Button>
-                    </Space>
-                </Col>
-            </Row>
+                    </div>
+                </div>
 
-            <Paragraph type="secondary" style={{ marginTop: 16 }}>
-                {category.description || 'Bez opisa.'}
-            </Paragraph>
+                <div className="nc-detail-body">
+                    <p className="nc-desc">{category.description || 'Bez opisa.'}</p>
 
-            <Row gutter={16} style={{ marginTop: 16 }}>
-                <Col span={12}>
-                    <Statistic title="Planirani budžet" value={plannedBudget} suffix="€" />
-                </Col>
-                <Col span={12}>
-                    <Statistic title="Trenutno potrošeno" value={spent} suffix="€" />
-                </Col>
-            </Row>
-            {plannedBudget > 0 && (
-                <Progress
-                    percent={percent}
-                    status={spent > plannedBudget ? 'exception' : 'active'}
-                    style={{ marginTop: 8 }}
-                />
-            )}
+                    <div className="nc-stats">
+                        <div className="nc-stat">
+                            <div className="label">Planirani budžet</div>
+                            <div className="value">{plannedBudget.toLocaleString('hr-HR')} €</div>
+                        </div>
+                        <div className="nc-stat">
+                            <div className="label">Trenutno potrošeno</div>
+                            <div className="value">{spent.toLocaleString('hr-HR')} €</div>
+                        </div>
+                    </div>
+                    {plannedBudget > 0 && (
+                        <div className={`nc-progress${isOver ? ' is-over' : ''}`}>
+                            <div style={{ width: `${percent}%` }} />
+                        </div>
+                    )}
 
-            <Title level={4} style={{ marginTop: 32 }}>Podkategorije</Title>
-            <List
-                bordered
-                dataSource={category.subcategories}
-                locale={{ emptyText: 'Nema podkategorija.' }}
-                renderItem={(sub) => (
-                    <List.Item
-                        actions={[
-                            <Button key="edit" size="small" icon={<EditOutlined />} onClick={() => openEditSub(sub)} />,
-                            <Button
-                                key="delete"
-                                size="small"
-                                danger
-                                icon={<DeleteOutlined />}
-                                onClick={() => handleDeleteSub(sub)}
-                            />,
-                        ]}
-                    >
-                        <Text>{sub.name}</Text>
-                        {sub.plannedBudget !== null && <Text type="secondary"> — {sub.plannedBudget} €</Text>}
-                    </List.Item>
-                )}
-            />
-            <Button type="dashed" icon={<PlusOutlined />} onClick={openAddSub} style={{ marginTop: 12 }}>
-                Dodaj podkategoriju
-            </Button>
+                    <div className="nc-sub-title">Podkategorije</div>
+                    <div className="nc-table">
+                        {category.subcategories.length === 0 && (
+                            <div className="nc-row" style={{ color: 'var(--faint)' }}>
+                                Nema podkategorija.
+                            </div>
+                        )}
+                        {category.subcategories.map((sub) => (
+                            <div className="nc-row" key={sub.id}>
+                                <span>{sub.name}</span>
+                                <span className="amt">{sub.plannedBudget !== null ? `${sub.plannedBudget} €` : '—'}</span>
+                                <span className="row-actions">
+                                    <Button className="nc-btn nc-btn-icon" onClick={() => openEditSub(sub)}>
+                                        Uredi
+                                    </Button>
+                                    <Button
+                                        className="nc-btn nc-btn-icon nc-btn-danger"
+                                        onClick={() => handleDeleteSub(sub)}
+                                    >
+                                        Obriši
+                                    </Button>
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                    <Button className="nc-btn" style={{ marginTop: 12 }} onClick={openAddSub}>
+                        + Dodaj podkategoriju
+                    </Button>
+                </div>
+            </div>
 
             <Modal
                 title="Uredi kategoriju"

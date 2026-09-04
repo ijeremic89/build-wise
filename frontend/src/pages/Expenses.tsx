@@ -1,32 +1,26 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Table, Button, Modal, Form, Input, InputNumber, Select, DatePicker, App as AntApp } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+import dayjs from 'dayjs';
 import { expensesApi } from '../api/expenses';
 import { categoriesApi } from '../api/categories';
-import type { ExpenseRequest, ExpenseStatus } from '../types';
-
-const PAGE_SIZE = 20;
+import type { Expense, ExpenseRequest, ExpenseStatus } from '../types';
 
 function Expenses() {
     const queryClient = useQueryClient();
-    const [showForm, setShowForm] = useState(false);
-    const [page, setPage] = useState(1);
-
-    const [categoryId, setCategoryId] = useState('');
-    const [subcategoryId, setSubcategoryId] = useState('');
-    const [name, setName] = useState('');
-    const [amount, setAmount] = useState('');
-    const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
-    const [status, setStatus] = useState<ExpenseStatus>('PLANNED');
-    const [vendor, setVendor] = useState('');
-    const [note, setNote] = useState('');
+    const { message } = AntApp.useApp();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [form] = Form.useForm();
+    const categoryId = Form.useWatch('categoryId', form);
 
     const { data: categories } = useQuery({
         queryKey: ['categories'],
         queryFn: categoriesApi.getAll,
     });
 
-    const { data: expenses, isLoading, isError } = useQuery({
+    const { data: expenses, isLoading } = useQuery({
         queryKey: ['expenses'],
         queryFn: () => expensesApi.getAll(),
     });
@@ -35,157 +29,139 @@ function Expenses() {
         mutationFn: (request: ExpenseRequest) => expensesApi.create(request),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['expenses'] });
-            setName('');
-            setAmount('');
-            setVendor('');
-            setNote('');
-            setSubcategoryId('');
-            setShowForm(false);
-            setPage(1);
+            setIsModalOpen(false);
+            form.resetFields();
         },
+        onError: () => message.error('Greška pri dodavanju troška.'),
     });
 
-    const selectedCategory = categories?.find((c) => c.id === Number(categoryId));
-    const availableSubcategories = selectedCategory?.subcategories ?? [];
+    const availableSubcategories = categories?.find((c) => c.id === categoryId)?.subcategories ?? [];
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!name.trim() || !categoryId || !amount || !date) return;
-
-        createMutation.mutate({
-            categoryId: Number(categoryId),
-            subcategoryId: subcategoryId ? Number(subcategoryId) : null,
-            name: name.trim(),
-            amount: Number(amount),
-            date,
-            status,
-            vendor: vendor.trim() || null,
-            note: note.trim() || null,
+    const handleCreate = () => {
+        form.validateFields().then((values) => {
+            createMutation.mutate({
+                categoryId: values.categoryId,
+                subcategoryId: values.subcategoryId ?? null,
+                name: values.name.trim(),
+                amount: values.amount,
+                date: values.date.format('YYYY-MM-DD'),
+                status: values.status,
+                vendor: values.vendor?.trim() || null,
+                note: values.note?.trim() || null,
+            });
         });
     };
 
-    // Newest first: sort by date desc, then id desc as a tiebreaker
     const sorted = [...(expenses ?? [])].sort((a, b) => {
         if (a.date !== b.date) return a.date < b.date ? 1 : -1;
         return b.id - a.id;
     });
 
-    const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
-    const currentPage = Math.min(page, totalPages);
-    const pageItems = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+    const columns: ColumnsType<Expense> = [
+        {
+            title: 'Naziv',
+            dataIndex: 'name',
+            render: (name: string, expense) => <Link to={`/expenses/${expense.id}`}>{name}</Link>,
+        },
+        { title: 'Kategorija', dataIndex: 'categoryName' },
+        {
+            title: 'Iznos',
+            dataIndex: 'amount',
+            align: 'right',
+            render: (amount: number) => <span className="tabular-cell">{amount.toLocaleString('hr-HR')} €</span>,
+        },
+        { title: 'Datum', dataIndex: 'date', className: 'tabular-cell' },
+        {
+            title: 'Status',
+            dataIndex: 'status',
+            render: (status: ExpenseStatus) => (
+                <span className={`nc-tag${status === 'PAID' ? ' is-good' : ''}`}>
+                    {status === 'PLANNED' ? 'Planirano' : 'Plaćeno'}
+                </span>
+            ),
+        },
+    ];
 
     return (
         <div>
             <h1>Troškovi</h1>
 
-            <button onClick={() => setShowForm((v) => !v)}>
-                {showForm ? 'Zatvori formu' : '+ Dodaj trošak'}
-            </button>
+            <div className="nc-form-toolbar">
+                <div className="nc-section-label" style={{ margin: 0, flex: 1 }}>
+                    <span>Troškovi — {sorted.length}</span>
+                </div>
+                <Button className="nc-btn" onClick={() => setIsModalOpen(true)}>
+                    + Dodaj trošak
+                </Button>
+            </div>
 
-            {showForm && (
-                <form onSubmit={handleSubmit}>
-                    <select
-                        value={categoryId}
-                        onChange={(e) => {
-                            setCategoryId(e.target.value);
-                            setSubcategoryId('');
-                        }}
+            <Table
+                rowKey="id"
+                loading={isLoading}
+                dataSource={sorted}
+                columns={columns}
+                pagination={{ pageSize: 20 }}
+                bordered
+                size="middle"
+            />
+
+            <Modal
+                title="Novi trošak"
+                open={isModalOpen}
+                onOk={handleCreate}
+                onCancel={() => {
+                    setIsModalOpen(false);
+                    form.resetFields();
+                }}
+                confirmLoading={createMutation.isPending}
+                okText="Spremi"
+                cancelText="Odustani"
+            >
+                <Form form={form} layout="vertical" initialValues={{ status: 'PLANNED', date: dayjs() }}>
+                    <Form.Item
+                        name="categoryId"
+                        label="Kategorija"
+                        rules={[{ required: true, message: 'Odaberi kategoriju' }]}
                     >
-                        <option value="">Odaberi kategoriju</option>
-                        {categories?.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                    </select>
-
-                    <select
-                        value={subcategoryId}
-                        onChange={(e) => setSubcategoryId(e.target.value)}
-                        disabled={!categoryId}
-                    >
-                        <option value="">Bez podkategorije</option>
-                        {availableSubcategories.map((s) => (
-                            <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
-                    </select>
-
-                    <input
-                        type="text"
-                        placeholder="Naziv troška"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    <input
-                        type="number"
-                        placeholder="Iznos"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                    />
-                    <input
-                        type="date"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                    />
-                    <select value={status} onChange={(e) => setStatus(e.target.value as ExpenseStatus)}>
-                        <option value="PLANNED">Planirano</option>
-                        <option value="PAID">Plaćeno</option>
-                    </select>
-                    <input
-                        type="text"
-                        placeholder="Dobavljač (opcionalno)"
-                        value={vendor}
-                        onChange={(e) => setVendor(e.target.value)}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Napomena (opcionalno)"
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                    />
-
-                    <button type="submit" disabled={createMutation.isPending}>
-                        {createMutation.isPending ? 'Dodajem...' : 'Spremi trošak'}
-                    </button>
-                    {createMutation.isError && (
-                        <p style={{ color: 'red' }}>Greška pri dodavanju troška.</p>
-                    )}
-                </form>
-            )}
-
-            {isLoading && <p>Učitavanje...</p>}
-            {isError && <p>Greška pri dohvaćanju troškova.</p>}
-
-            {!isLoading && !isError && (
-                <>
-                    <ul>
-                        {pageItems.map((expense) => (
-                            <li key={expense.id}>
-                                <Link to={`/expenses/${expense.id}`}>
-                                    {expense.name} — {expense.amount} € —{' '}
-                                    [{expense.status === 'PLANNED' ? 'Planirano' : 'Plaćeno'}]
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-
-                    {totalPages > 1 && (
-                        <div>
-                            <button
-                                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                disabled={currentPage === 1}
-                            >
-                                Prethodna
-                            </button>
-                            <span> Stranica {currentPage} / {totalPages} </span>
-                            <button
-                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                                disabled={currentPage === totalPages}
-                            >
-                                Sljedeća
-                            </button>
-                        </div>
-                    )}
-                </>
-            )}
+                        <Select
+                            placeholder="Odaberi kategoriju"
+                            options={categories?.map((c) => ({ value: c.id, label: c.name }))}
+                            onChange={() => form.setFieldValue('subcategoryId', undefined)}
+                        />
+                    </Form.Item>
+                    <Form.Item name="subcategoryId" label="Podkategorija">
+                        <Select
+                            placeholder="Bez podkategorije"
+                            allowClear
+                            disabled={!categoryId}
+                            options={availableSubcategories.map((s) => ({ value: s.id, label: s.name }))}
+                        />
+                    </Form.Item>
+                    <Form.Item name="name" label="Naziv troška" rules={[{ required: true, message: 'Unesi naziv troška' }]}>
+                        <Input placeholder="Naziv troška" />
+                    </Form.Item>
+                    <Form.Item name="amount" label="Iznos" rules={[{ required: true, message: 'Unesi iznos' }]}>
+                        <InputNumber style={{ width: '100%' }} min={0} addonAfter="€" />
+                    </Form.Item>
+                    <Form.Item name="date" label="Datum" rules={[{ required: true, message: 'Odaberi datum' }]}>
+                        <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
+                    </Form.Item>
+                    <Form.Item name="status" label="Status">
+                        <Select
+                            options={[
+                                { value: 'PLANNED', label: 'Planirano' },
+                                { value: 'PAID', label: 'Plaćeno' },
+                            ]}
+                        />
+                    </Form.Item>
+                    <Form.Item name="vendor" label="Dobavljač">
+                        <Input placeholder="Dobavljač (opcionalno)" />
+                    </Form.Item>
+                    <Form.Item name="note" label="Napomena">
+                        <Input placeholder="Napomena (opcionalno)" />
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     );
 }

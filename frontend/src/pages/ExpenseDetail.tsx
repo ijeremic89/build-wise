@@ -1,17 +1,22 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Spin, Alert, Modal, Form, Input, InputNumber, Select, DatePicker, Button, App as AntApp } from 'antd';
+import dayjs from 'dayjs';
 import { expensesApi } from '../api/expenses';
 import { categoriesApi } from '../api/categories';
-import type { ExpenseRequest, ExpenseStatus } from '../types';
+import type { ExpenseRequest } from '../types';
 
 function ExpenseDetail() {
     const { id } = useParams();
     const expenseId = Number(id);
     const navigate = useNavigate();
     const queryClient = useQueryClient();
+    const { message, modal } = AntApp.useApp();
 
-    const [isEditing, setIsEditing] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [form] = Form.useForm();
+    const categoryId = Form.useWatch('categoryId', form);
 
     const { data: expenses, isLoading, isError } = useQuery({
         queryKey: ['expenses'],
@@ -24,35 +29,15 @@ function ExpenseDetail() {
     });
 
     const expense = expenses?.find((e) => e.id === expenseId);
-
-    const [categoryId, setCategoryId] = useState('');
-    const [subcategoryId, setSubcategoryId] = useState('');
-    const [name, setName] = useState('');
-    const [amount, setAmount] = useState('');
-    const [date, setDate] = useState('');
-    const [status, setStatus] = useState<ExpenseStatus>('PLANNED');
-    const [vendor, setVendor] = useState('');
-    const [note, setNote] = useState('');
-
-    const startEdit = () => {
-        if (!expense) return;
-        setCategoryId(String(expense.categoryId));
-        setSubcategoryId(expense.subcategoryId ? String(expense.subcategoryId) : '');
-        setName(expense.name);
-        setAmount(String(expense.amount));
-        setDate(expense.date);
-        setStatus(expense.status);
-        setVendor(expense.vendor ?? '');
-        setNote(expense.note ?? '');
-        setIsEditing(true);
-    };
+    const availableSubcategories = categories?.find((c) => c.id === categoryId)?.subcategories ?? [];
 
     const updateMutation = useMutation({
         mutationFn: (request: ExpenseRequest) => expensesApi.update(expenseId, request),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['expenses'] });
-            setIsEditing(false);
+            setIsEditOpen(false);
         },
+        onError: () => message.error('Greška pri spremanju troška.'),
     });
 
     const deleteMutation = useMutation({
@@ -61,136 +46,180 @@ function ExpenseDetail() {
             queryClient.invalidateQueries({ queryKey: ['expenses'] });
             navigate('/expenses');
         },
+        onError: () => message.error('Greška pri brisanju troška.'),
     });
 
-    const handleSave = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!name.trim() || !categoryId || !amount || !date) return;
+    if (isLoading) return <Spin style={{ marginTop: 40 }} />;
+    if (isError) return <Alert type="error" message="Greška pri dohvaćanju troška." showIcon />;
+    if (!expense) return <Alert type="warning" message="Trošak nije pronađen." showIcon />;
 
-        const confirmed = window.confirm('Jesi li siguran da želiš spremiti izmjene ovog troška?');
-        if (!confirmed) return;
+    const openEdit = () => {
+        form.setFieldsValue({
+            categoryId: expense.categoryId,
+            subcategoryId: expense.subcategoryId,
+            name: expense.name,
+            amount: expense.amount,
+            date: dayjs(expense.date),
+            status: expense.status,
+            vendor: expense.vendor ?? '',
+            note: expense.note ?? '',
+        });
+        setIsEditOpen(true);
+    };
 
-        updateMutation.mutate({
-            categoryId: Number(categoryId),
-            subcategoryId: subcategoryId ? Number(subcategoryId) : null,
-            name: name.trim(),
-            amount: Number(amount),
-            date,
-            status,
-            vendor: vendor.trim() || null,
-            note: note.trim() || null,
+    const handleSave = () => {
+        form.validateFields().then((values) => {
+            const confirmed = window.confirm('Jesi li siguran da želiš spremiti izmjene ovog troška?');
+            if (!confirmed) return;
+
+            updateMutation.mutate({
+                categoryId: values.categoryId,
+                subcategoryId: values.subcategoryId ?? null,
+                name: values.name.trim(),
+                amount: values.amount,
+                date: values.date.format('YYYY-MM-DD'),
+                status: values.status,
+                vendor: values.vendor?.trim() || null,
+                note: values.note?.trim() || null,
+            });
         });
     };
 
     const handleDelete = () => {
-        const confirmed = window.confirm(
-            'Jesi li siguran da želiš obrisati ovaj trošak? Ova radnja se ne može poništiti.'
-        );
-        if (!confirmed) return;
-        deleteMutation.mutate();
+        modal.confirm({
+            title: 'Obriši trošak',
+            content: 'Jesi li siguran da želiš obrisati ovaj trošak? Ova radnja se ne može poništiti.',
+            okText: 'Obriši',
+            okType: 'danger',
+            cancelText: 'Odustani',
+            onOk: () => deleteMutation.mutate(),
+        });
     };
-
-    const selectedCategory = categories?.find((c) => c.id === Number(categoryId));
-    const availableSubcategories = selectedCategory?.subcategories ?? [];
-
-    if (isLoading) return <p>Učitavanje...</p>;
-    if (isError) return <p>Greška pri dohvaćanju troška.</p>;
-    if (!expense) return <p>Trošak nije pronađen.</p>;
 
     return (
         <div>
-            <Link to="/expenses">&larr; Natrag na troškove</Link>
-            <h1>{expense.name}</h1>
+            <Link className="nc-back" to="/expenses">
+                &larr; Natrag na troškove
+            </Link>
 
-            {!isEditing ? (
-                <div>
-                    <p><strong>Iznos:</strong> {expense.amount} €</p>
-                    <p><strong>Datum:</strong> {expense.date}</p>
-                    <p><strong>Status:</strong> {expense.status === 'PLANNED' ? 'Planirano' : 'Plaćeno'}</p>
-                    <p><strong>Kategorija:</strong> {expense.categoryName}</p>
-                    {expense.subcategoryName && (
-                        <p><strong>Podkategorija:</strong> {expense.subcategoryName}</p>
-                    )}
-                    {expense.vendor && <p><strong>Dobavljač:</strong> {expense.vendor}</p>}
-                    {expense.note && <p><strong>Napomena:</strong> {expense.note}</p>}
-
-                    <button onClick={startEdit}>Uredi</button>
-                    <button onClick={handleDelete} disabled={deleteMutation.isPending}>
-                        {deleteMutation.isPending ? 'Brišem...' : 'Obriši'}
-                    </button>
-                    {deleteMutation.isError && (
-                        <p style={{ color: 'red' }}>Greška pri brisanju.</p>
-                    )}
+            <div className="nc-detail" style={{ marginTop: 16 }}>
+                <div className="nc-detail-head">
+                    <h1>{expense.name}</h1>
+                    <div className="actions">
+                        <Button className="nc-btn" onClick={openEdit}>
+                            Uredi
+                        </Button>
+                        <Button
+                            className="nc-btn nc-btn-danger"
+                            onClick={handleDelete}
+                            loading={deleteMutation.isPending}
+                        >
+                            Obriši
+                        </Button>
+                    </div>
                 </div>
-            ) : (
-                <form onSubmit={handleSave}>
-                    <select
-                        value={categoryId}
-                        onChange={(e) => {
-                            setCategoryId(e.target.value);
-                            setSubcategoryId('');
-                        }}
+
+                <div className="nc-detail-body">
+                    <div className="nc-stats">
+                        <div className="nc-stat">
+                            <div className="label">Iznos</div>
+                            <div className="value">{expense.amount.toLocaleString('hr-HR')} €</div>
+                        </div>
+                        <div className="nc-stat">
+                            <div className="label">Status</div>
+                            <div className="value" style={{ fontSize: 16 }}>
+                                <span className={`nc-tag${expense.status === 'PAID' ? ' is-good' : ''}`}>
+                                    {expense.status === 'PLANNED' ? 'Planirano' : 'Plaćeno'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="nc-table" style={{ marginTop: 24 }}>
+                        <div className="nc-row">
+                            <span>Datum</span>
+                            <span className="amt">{expense.date}</span>
+                        </div>
+                        <div className="nc-row">
+                            <span>Kategorija</span>
+                            <span className="amt">{expense.categoryName}</span>
+                        </div>
+                        {expense.subcategoryName && (
+                            <div className="nc-row">
+                                <span>Podkategorija</span>
+                                <span className="amt">{expense.subcategoryName}</span>
+                            </div>
+                        )}
+                        {expense.vendor && (
+                            <div className="nc-row">
+                                <span>Dobavljač</span>
+                                <span className="amt">{expense.vendor}</span>
+                            </div>
+                        )}
+                        {expense.note && (
+                            <div className="nc-row">
+                                <span>Napomena</span>
+                                <span className="amt">{expense.note}</span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            <Modal
+                title="Uredi trošak"
+                open={isEditOpen}
+                onOk={handleSave}
+                onCancel={() => setIsEditOpen(false)}
+                confirmLoading={updateMutation.isPending}
+                okText="Spremi"
+                cancelText="Odustani"
+            >
+                <Form form={form} layout="vertical">
+                    <Form.Item
+                        name="categoryId"
+                        label="Kategorija"
+                        rules={[{ required: true, message: 'Odaberi kategoriju' }]}
                     >
-                        <option value="">Odaberi kategoriju</option>
-                        {categories?.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                        ))}
-                    </select>
-
-                    <select
-                        value={subcategoryId}
-                        onChange={(e) => setSubcategoryId(e.target.value)}
-                        disabled={!categoryId}
-                    >
-                        <option value="">Bez podkategorije</option>
-                        {availableSubcategories.map((s) => (
-                            <option key={s.id} value={s.id}>{s.name}</option>
-                        ))}
-                    </select>
-
-                    <input
-                        type="text"
-                        placeholder="Naziv troška"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    <input
-                        type="number"
-                        placeholder="Iznos"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                    />
-                    <input
-                        type="date"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                    />
-                    <select value={status} onChange={(e) => setStatus(e.target.value as ExpenseStatus)}>
-                        <option value="PLANNED">Planirano</option>
-                        <option value="PAID">Plaćeno</option>
-                    </select>
-                    <input
-                        type="text"
-                        placeholder="Dobavljač (opcionalno)"
-                        value={vendor}
-                        onChange={(e) => setVendor(e.target.value)}
-                    />
-                    <input
-                        type="text"
-                        placeholder="Napomena (opcionalno)"
-                        value={note}
-                        onChange={(e) => setNote(e.target.value)}
-                    />
-
-                    <button type="submit" disabled={updateMutation.isPending}>
-                        {updateMutation.isPending ? 'Spremam...' : 'Spremi izmjene'}
-                    </button>
-                    <button type="button" onClick={() => setIsEditing(false)}>Odustani</button>
-                    {updateMutation.isError && (
-                        <p style={{ color: 'red' }}>Greška pri spremanju.</p>
-                    )}
-                </form>
-            )}
+                        <Select
+                            placeholder="Odaberi kategoriju"
+                            options={categories?.map((c) => ({ value: c.id, label: c.name }))}
+                            onChange={() => form.setFieldValue('subcategoryId', undefined)}
+                        />
+                    </Form.Item>
+                    <Form.Item name="subcategoryId" label="Podkategorija">
+                        <Select
+                            placeholder="Bez podkategorije"
+                            allowClear
+                            disabled={!categoryId}
+                            options={availableSubcategories.map((s) => ({ value: s.id, label: s.name }))}
+                        />
+                    </Form.Item>
+                    <Form.Item name="name" label="Naziv troška" rules={[{ required: true, message: 'Unesi naziv troška' }]}>
+                        <Input placeholder="Naziv troška" />
+                    </Form.Item>
+                    <Form.Item name="amount" label="Iznos" rules={[{ required: true, message: 'Unesi iznos' }]}>
+                        <InputNumber style={{ width: '100%' }} min={0} addonAfter="€" />
+                    </Form.Item>
+                    <Form.Item name="date" label="Datum" rules={[{ required: true, message: 'Odaberi datum' }]}>
+                        <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" />
+                    </Form.Item>
+                    <Form.Item name="status" label="Status">
+                        <Select
+                            options={[
+                                { value: 'PLANNED', label: 'Planirano' },
+                                { value: 'PAID', label: 'Plaćeno' },
+                            ]}
+                        />
+                    </Form.Item>
+                    <Form.Item name="vendor" label="Dobavljač">
+                        <Input placeholder="Dobavljač (opcionalno)" />
+                    </Form.Item>
+                    <Form.Item name="note" label="Napomena">
+                        <Input placeholder="Napomena (opcionalno)" />
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     );
 }

@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Row, Col, Card, Avatar, Typography, Modal, Form, Input, InputNumber, Spin, Alert, App as AntApp } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, InputNumber, Spin, Alert, Button, App as AntApp } from 'antd';
 import { categoriesApi } from '../api/categories';
 import type { CategoryRequest } from '../types';
-import { iconForCategory } from '../utils/categoryIcons';
-
-const { Text } = Typography;
+import { CategoryIcon } from '../components/CategoryIcon';
 
 function Categories() {
     const navigate = useNavigate();
@@ -28,9 +25,7 @@ function Categories() {
             setIsModalOpen(false);
             form.resetFields();
         },
-        onError: () => {
-            message.error('Greška pri dodavanju kategorije.');
-        },
+        onError: () => message.error('Greška pri dodavanju kategorije.'),
     });
 
     const handleCreate = () => {
@@ -50,39 +45,30 @@ function Categories() {
         <div>
             <h1>Kategorije</h1>
 
-            <Row gutter={[16, 16]} justify="center">
-                {categories?.map((category) => (
-                    <Col key={category.id}>
-                        <Card
-                            hoverable
-                            onClick={() => navigate(`/categories/${category.id}`)}
-                            styles={{ body: { padding: 20 } }}
-                            style={{ width: 140, textAlign: 'center' }}
-                        >
-                            <Avatar size={64} style={{ backgroundColor: 'var(--accent-bg)', fontSize: 32 }}>
-                                {iconForCategory(category.name)}
-                            </Avatar>
-                            <div style={{ marginTop: 12 }}>
-                                <Text strong>{category.name}</Text>
-                            </div>
-                        </Card>
-                    </Col>
-                ))}
+            <div className="nc-form-toolbar">
+                <div className="nc-section-label" style={{ margin: 0, flex: 1 }}>
+                    <span>Kategorije — {categories?.length ?? 0}</span>
+                </div>
+                <Button className="nc-btn" onClick={() => setIsModalOpen(true)}>
+                    + Dodaj kategoriju
+                </Button>
+            </div>
 
-                <Col>
-                    <Card
-                        hoverable
-                        onClick={() => setIsModalOpen(true)}
-                        styles={{ body: { padding: 20 } }}
-                        style={{ width: 140, textAlign: 'center', borderStyle: 'dashed' }}
+            <div className="nc-grid">
+                {categories?.map((category) => (
+                    <button
+                        key={category.id}
+                        type="button"
+                        className="nc-tile"
+                        onClick={() => navigate(`/categories/${category.id}`)}
                     >
-                        <Avatar size={64} style={{ backgroundColor: 'transparent', color: 'var(--accent)', fontSize: 28 }} icon={<PlusOutlined />} />
-                        <div style={{ marginTop: 12 }}>
-                            <Text strong>Dodaj kategoriju</Text>
-                        </div>
-                    </Card>
-                </Col>
-            </Row>
+                        <span className="nc-tile-icon">
+                            <CategoryIcon name={category.name} />
+                        </span>
+                        <span className="nc-tile-name">{category.name}</span>
+                    </button>
+                ))}
+            </div>
 
             <Modal
                 title="Nova kategorija"
