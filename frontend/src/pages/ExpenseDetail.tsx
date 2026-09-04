@@ -7,6 +7,7 @@ import { expensesApi } from '../api/expenses';
 import { categoriesApi } from '../api/categories';
 import { contractorsApi } from '../api/contractors';
 import type { ExpenseRequest } from '../types';
+import { AttachmentsPanel } from '../components/AttachmentsPanel';
 
 function ExpenseDetail() {
     const { id } = useParams();
@@ -169,6 +170,8 @@ function ExpenseDetail() {
                             </div>
                         )}
                     </div>
+
+                    <AttachmentsPanel ownerType="EXPENSE" ownerId={expense.id} />
                 </div>
             </div>
 

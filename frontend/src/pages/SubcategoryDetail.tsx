@@ -6,6 +6,7 @@ import { categoriesApi, subcategoriesApi } from '../api/categories';
 import { expensesApi } from '../api/expenses';
 import type { SubcategoryRequest } from '../types';
 import { CategoryIcon } from '../components/CategoryIcon';
+import { AttachmentsPanel } from '../components/AttachmentsPanel';
 
 function SubcategoryDetail() {
     const { categoryId: categoryIdParam, subcategoryId } = useParams();
@@ -129,6 +130,8 @@ function SubcategoryDetail() {
                             <div style={{ width: `${percent}%` }} />
                         </div>
                     )}
+
+                    <AttachmentsPanel ownerType="SUBCATEGORY" ownerId={subcategory.id} />
                 </div>
             </div>
 

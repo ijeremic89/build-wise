@@ -6,6 +6,7 @@ import { categoriesApi, subcategoriesApi } from '../api/categories';
 import { expensesApi } from '../api/expenses';
 import type { CategoryRequest, SubcategoryRequest } from '../types';
 import { CategoryIcon } from '../components/CategoryIcon';
+import { AttachmentsPanel } from '../components/AttachmentsPanel';
 
 function CategoryDetail() {
     const { id } = useParams();
@@ -189,6 +190,8 @@ function CategoryDetail() {
                     <Button className="nc-btn" style={{ marginTop: 12 }} onClick={openAddSub}>
                         + Dodaj podkategoriju
                     </Button>
+
+                    <AttachmentsPanel ownerType="CATEGORY" ownerId={category.id} />
                 </div>
             </div>
 

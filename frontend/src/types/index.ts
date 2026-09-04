@@ -85,3 +85,16 @@ export interface TodoItemRequest {
     done: boolean;
     dueDate?: string | null;
 }
+
+export type AttachmentOwnerType = 'CATEGORY' | 'SUBCATEGORY' | 'EXPENSE';
+
+export interface Attachment {
+    id: number;
+    ownerType: AttachmentOwnerType;
+    ownerId: number;
+    fileName: string;
+    contentType: string;
+    fileSize: number;
+    createdAt: string;
+    url: string;
+}

@@ -426,6 +426,40 @@ main {
   margin-bottom: 20px;
 }
 
+/* attachments */
+.nc-attachment-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.nc-attachment-link:hover {
+  color: var(--accent);
+}
+
+.nc-attachment-thumb {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  flex-shrink: 0;
+  color: var(--faint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nc-attachment-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ---- AntD overrides so future components inherit this look ---- */
 .ant-statistic-content,
 .ant-statistic-content-value {

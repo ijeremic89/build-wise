@@ -7,6 +7,9 @@ build/
 *.jar
 !gradle-wrapper.jar
 
+# Uploaded attachments (local disk storage)
+uploads/
+
 # Spring Boot local/secret configs
 application-local.yml
 application-local.properties

@@ -94,6 +94,14 @@ export function CategoryIconSprite() {
                     <path d="M3 15h18v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                     <path d="M12 7V4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </symbol>
+                <symbol id="icon-file" viewBox="0 0 24 24">
+                    <path d="M7 3h7l4 4v14H7z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                    <path d="M14 3v4h4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                </symbol>
+                <symbol id="icon-upload" viewBox="0 0 24 24">
+                    <path d="M12 15V5M8 9l4-4 4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                </symbol>
             </defs>
         </svg>
     );
