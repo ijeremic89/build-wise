@@ -31,6 +31,9 @@ public class CategoryService {
         category.setUser(user);
         category.setName(request.name());
         category.setPlannedBudget(request.plannedBudget());
+        category.setStartDate(request.startDate());
+        category.setEndDate(request.endDate());
+        category.setDescription(request.description());
 
         return CategoryDto.from(categoryRepository.save(category));
     }
@@ -39,6 +42,9 @@ public class CategoryService {
         Category category = findOwnedOrThrow(id);
         category.setName(request.name());
         category.setPlannedBudget(request.plannedBudget());
+        category.setStartDate(request.startDate());
+        category.setEndDate(request.endDate());
+        category.setDescription(request.description());
         return CategoryDto.from(category);
     }
 
