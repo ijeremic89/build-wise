@@ -69,6 +69,10 @@ function CategoryDetail() {
         .filter((e) => e.categoryId === category.id && e.status === 'PAID')
         .reduce((sum, e) => sum + e.amount, 0);
 
+    const categoryExpenses = (expenses ?? [])
+        .filter((e) => e.categoryId === category.id && e.status === 'PAID')
+        .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id));
+
     const plannedBudget = category.plannedBudget ?? 0;
     const percent = plannedBudget > 0 ? Math.min(100, Math.round((spent / plannedBudget) * 100)) : 0;
     const isOver = plannedBudget > 0 && spent > plannedBudget;
@@ -190,6 +194,23 @@ function CategoryDetail() {
                     <Button className="nc-btn" style={{ marginTop: 12 }} onClick={openAddSub}>
                         + Dodaj podkategoriju
                     </Button>
+
+                    <div className="nc-sub-title" style={{ marginTop: 24 }}>
+                        Troškovi
+                    </div>
+                    <div className="nc-table">
+                        {categoryExpenses.length === 0 && (
+                            <div className="nc-row" style={{ color: 'var(--faint)' }}>
+                                Nema troškova.
+                            </div>
+                        )}
+                        {categoryExpenses.map((expense) => (
+                            <Link key={expense.id} to={`/expenses/${expense.id}`} className="nc-row nc-row-link">
+                                <span>{expense.name}</span>
+                                <span className="amt">{expense.amount.toLocaleString('hr-HR')} €</span>
+                            </Link>
+                        ))}
+                    </div>
 
                     <AttachmentsPanel ownerType="CATEGORY" ownerId={category.id} />
                 </div>

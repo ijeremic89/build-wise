@@ -58,6 +58,10 @@ function SubcategoryDetail() {
         .filter((e) => e.subcategoryId === subcategory.id && e.status === 'PAID')
         .reduce((sum, e) => sum + e.amount, 0);
 
+    const subcategoryExpenses = (expenses ?? [])
+        .filter((e) => e.subcategoryId === subcategory.id && e.status === 'PAID')
+        .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id));
+
     const plannedBudget = subcategory.plannedBudget ?? 0;
     const percent = plannedBudget > 0 ? Math.min(100, Math.round((spent / plannedBudget) * 100)) : 0;
     const isOver = plannedBudget > 0 && spent > plannedBudget;
@@ -130,6 +134,23 @@ function SubcategoryDetail() {
                             <div style={{ width: `${percent}%` }} />
                         </div>
                     )}
+
+                    <div className="nc-sub-title" style={{ marginTop: 24 }}>
+                        Troškovi
+                    </div>
+                    <div className="nc-table">
+                        {subcategoryExpenses.length === 0 && (
+                            <div className="nc-row" style={{ color: 'var(--faint)' }}>
+                                Nema troškova.
+                            </div>
+                        )}
+                        {subcategoryExpenses.map((expense) => (
+                            <Link key={expense.id} to={`/expenses/${expense.id}`} className="nc-row nc-row-link">
+                                <span>{expense.name}</span>
+                                <span className="amt">{expense.amount.toLocaleString('hr-HR')} €</span>
+                            </Link>
+                        ))}
+                    </div>
 
                     <AttachmentsPanel ownerType="SUBCATEGORY" ownerId={subcategory.id} />
                 </div>
