@@ -3,6 +3,7 @@ import { ConfigProvider, App as AntApp } from 'antd';
 import Dashboard from './pages/Dashboard';
 import Categories from './pages/Categories';
 import CategoryDetail from './pages/CategoryDetail';
+import SubcategoryDetail from './pages/SubcategoryDetail';
 import Expenses from './pages/Expenses';
 import ExpenseDetail from './pages/ExpenseDetail.tsx';
 import { CategoryIconSprite } from './components/CategoryIcon';
@@ -64,6 +65,7 @@ function App() {
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/categories" element={<Categories />} />
                         <Route path="/categories/:id" element={<CategoryDetail />} />
+                        <Route path="/categories/:categoryId/subcategories/:subcategoryId" element={<SubcategoryDetail />} />
                         <Route path="/expenses" element={<Expenses />} />
                         <Route path="/expenses/:id" element={<ExpenseDetail />} />
                     </Routes>

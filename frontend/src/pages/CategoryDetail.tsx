@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Spin, Alert, Modal, Form, Input, InputNumber, Button, App as AntApp } from 'antd';
 import { categoriesApi, subcategoriesApi } from '../api/categories';
 import { expensesApi } from '../api/expenses';
-import type { CategoryRequest, Subcategory, SubcategoryRequest } from '../types';
+import type { CategoryRequest, SubcategoryRequest } from '../types';
 import { CategoryIcon } from '../components/CategoryIcon';
 
 function CategoryDetail() {
@@ -18,7 +18,6 @@ function CategoryDetail() {
     const [editForm] = Form.useForm();
 
     const [isSubModalOpen, setIsSubModalOpen] = useState(false);
-    const [editingSubId, setEditingSubId] = useState<number | null>(null);
     const [subForm] = Form.useForm();
 
     const { data: categories, isLoading, isError } = useQuery({
@@ -59,24 +58,6 @@ function CategoryDetail() {
             subForm.resetFields();
         },
         onError: () => message.error('Greška pri dodavanju podkategorije.'),
-    });
-
-    const updateSubMutation = useMutation({
-        mutationFn: ({ id: subId, request }: { id: number; request: SubcategoryRequest }) =>
-            subcategoriesApi.update(subId, request),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-            setIsSubModalOpen(false);
-            setEditingSubId(null);
-            subForm.resetFields();
-        },
-        onError: () => message.error('Greška pri spremanju podkategorije.'),
-    });
-
-    const deleteSubMutation = useMutation({
-        mutationFn: (subId: number) => subcategoriesApi.delete(subId),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['categories'] }),
-        onError: () => message.error('Greška pri brisanju podkategorije.'),
     });
 
     if (isLoading) return <Spin style={{ marginTop: 40 }} />;
@@ -122,40 +103,17 @@ function CategoryDetail() {
     };
 
     const openAddSub = () => {
-        setEditingSubId(null);
         subForm.resetFields();
-        setIsSubModalOpen(true);
-    };
-
-    const openEditSub = (sub: Subcategory) => {
-        setEditingSubId(sub.id);
-        subForm.setFieldsValue({ name: sub.name, plannedBudget: sub.plannedBudget });
         setIsSubModalOpen(true);
     };
 
     const handleSubSave = () => {
         subForm.validateFields().then((values) => {
-            const request: SubcategoryRequest = {
+            createSubMutation.mutate({
                 categoryId: category.id,
                 name: values.name.trim(),
                 plannedBudget: values.plannedBudget ?? null,
-            };
-            if (editingSubId) {
-                updateSubMutation.mutate({ id: editingSubId, request });
-            } else {
-                createSubMutation.mutate(request);
-            }
-        });
-    };
-
-    const handleDeleteSub = (sub: Subcategory) => {
-        modal.confirm({
-            title: 'Obriši podkategoriju',
-            content: `Jesi li siguran da želiš obrisati "${sub.name}"?`,
-            okText: 'Obriši',
-            okType: 'danger',
-            cancelText: 'Odustani',
-            onOk: () => deleteSubMutation.mutate(sub.id),
+            });
         });
     };
 
@@ -212,21 +170,15 @@ function CategoryDetail() {
                             </div>
                         )}
                         {category.subcategories.map((sub) => (
-                            <div className="nc-row" key={sub.id}>
+                            <button
+                                key={sub.id}
+                                type="button"
+                                className="nc-row nc-row-link"
+                                onClick={() => navigate(`/categories/${category.id}/subcategories/${sub.id}`)}
+                            >
                                 <span>{sub.name}</span>
                                 <span className="amt">{sub.plannedBudget !== null ? `${sub.plannedBudget} €` : '—'}</span>
-                                <span className="row-actions">
-                                    <Button className="nc-btn nc-btn-icon" onClick={() => openEditSub(sub)}>
-                                        Uredi
-                                    </Button>
-                                    <Button
-                                        className="nc-btn nc-btn-icon nc-btn-danger"
-                                        onClick={() => handleDeleteSub(sub)}
-                                    >
-                                        Obriši
-                                    </Button>
-                                </span>
-                            </div>
+                            </button>
                         ))}
                     </div>
                     <Button className="nc-btn" style={{ marginTop: 12 }} onClick={openAddSub}>
@@ -258,12 +210,12 @@ function CategoryDetail() {
             </Modal>
 
             <Modal
-                title={editingSubId ? 'Uredi podkategoriju' : 'Nova podkategorija'}
+                title="Nova podkategorija"
                 open={isSubModalOpen}
                 onOk={handleSubSave}
                 onCancel={() => setIsSubModalOpen(false)}
-                confirmLoading={createSubMutation.isPending || updateSubMutation.isPending}
-                okText={editingSubId ? 'Spremi' : 'Dodaj'}
+                confirmLoading={createSubMutation.isPending}
+                okText="Dodaj"
                 cancelText="Odustani"
             >
                 <Form form={subForm} layout="vertical">

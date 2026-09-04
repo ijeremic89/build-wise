@@ -331,6 +331,12 @@ main {
   gap: 12px;
   padding: 11px 16px;
   font-size: 13.5px;
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
 }
 
 .nc-row + .nc-row {
@@ -346,10 +352,17 @@ main {
   flex-shrink: 0;
 }
 
-.nc-row .row-actions {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
+.nc-row-link {
+  cursor: pointer;
+}
+
+.nc-row-link:hover {
+  background: var(--accent-tint);
+}
+
+.nc-row-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
 }
 
 /* ghost mono button, used for edit/delete style actions */

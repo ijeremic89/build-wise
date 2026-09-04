@@ -20,7 +20,7 @@ public class CategoryService {
     private final CurrentUser currentUser;
 
     public List<CategoryDto> findAll() {
-        return categoryRepository.findByUserId(currentUser.id())
+        return categoryRepository.findByUserIdOrderByIdAsc(currentUser.id())
                 .stream().map(CategoryDto::from).toList();
     }
 
