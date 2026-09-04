@@ -2,6 +2,8 @@ package com.jere.build_wise.expanse;
 
 import com.jere.build_wise.category.Category;
 import com.jere.build_wise.category.CategoryRepository;
+import com.jere.build_wise.contractor.Contractor;
+import com.jere.build_wise.contractor.ContractorRepository;
 import com.jere.build_wise.subcategory.Subcategory;
 import com.jere.build_wise.subcategory.SubcategoryRepository;
 import com.jere.build_wise.user.CurrentUser;
@@ -22,6 +24,7 @@ public class ExpenseService {
     private final ExpenseRepository expenseRepository;
     private final CategoryRepository categoryRepository;
     private final SubcategoryRepository subcategoryRepository;
+    private final ContractorRepository contractorRepository;
     private final UserRepository userRepository;
     private final CurrentUser currentUser;
 
@@ -47,6 +50,12 @@ public class ExpenseService {
                     .orElseThrow(() -> new EntityNotFoundException("Subcategory not found: " + request.subcategoryId()));
         }
 
+        Contractor contractor = null;
+        if (request.contractorId() != null) {
+            contractor = contractorRepository.findById(request.contractorId())
+                    .orElseThrow(() -> new EntityNotFoundException("Contractor not found: " + request.contractorId()));
+        }
+
         Expense expense = new Expense();
         expense.setUser(user);
         expense.setCategory(category);
@@ -55,7 +64,7 @@ public class ExpenseService {
         expense.setAmount(request.amount());
         expense.setDate(request.date());
         expense.setStatus(request.status());
-        expense.setVendor(request.vendor());
+        expense.setContractor(contractor);
         expense.setNote(request.note());
 
         return ExpenseDto.from(expenseRepository.save(expense));
@@ -73,13 +82,19 @@ public class ExpenseService {
                     .orElseThrow(() -> new EntityNotFoundException("Subcategory not found: " + request.subcategoryId()));
         }
 
+        Contractor contractor = null;
+        if (request.contractorId() != null) {
+            contractor = contractorRepository.findById(request.contractorId())
+                    .orElseThrow(() -> new EntityNotFoundException("Contractor not found: " + request.contractorId()));
+        }
+
         expense.setCategory(category);
         expense.setSubcategory(subcategory);
         expense.setName(request.name());
         expense.setAmount(request.amount());
         expense.setDate(request.date());
         expense.setStatus(request.status());
-        expense.setVendor(request.vendor());
+        expense.setContractor(contractor);
         expense.setNote(request.note());
 
         return ExpenseDto.from(expense);

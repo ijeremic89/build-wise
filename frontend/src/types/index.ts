@@ -40,7 +40,8 @@ export interface Expense {
     amount: number;
     date: string; // ISO date string, npr "2026-08-14"
     status: ExpenseStatus;
-    vendor: string | null;
+    contractorId: number | null;
+    contractorName: string | null;
     note: string | null;
 }
 
@@ -51,6 +52,36 @@ export interface ExpenseRequest {
     amount: number;
     date: string;
     status: ExpenseStatus;
-    vendor: string | null;
+    contractorId: number | null;
     note: string | null;
+}
+
+export interface Contractor {
+    id: number;
+    name: string;
+    companyName: string | null;
+    phone: string | null;
+    email: string | null;
+    note: string | null;
+}
+
+export interface ContractorRequest {
+    name: string;
+    companyName?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    note?: string | null;
+}
+
+export interface TodoItem {
+    id: number;
+    title: string;
+    done: boolean;
+    dueDate: string | null;
+}
+
+export interface TodoItemRequest {
+    title: string;
+    done: boolean;
+    dueDate?: string | null;
 }

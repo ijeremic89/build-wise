@@ -5,6 +5,7 @@ import { Spin, Alert, Modal, Form, Input, InputNumber, Select, DatePicker, Butto
 import dayjs from 'dayjs';
 import { expensesApi } from '../api/expenses';
 import { categoriesApi } from '../api/categories';
+import { contractorsApi } from '../api/contractors';
 import type { ExpenseRequest } from '../types';
 
 function ExpenseDetail() {
@@ -26,6 +27,11 @@ function ExpenseDetail() {
     const { data: categories } = useQuery({
         queryKey: ['categories'],
         queryFn: categoriesApi.getAll,
+    });
+
+    const { data: contractors } = useQuery({
+        queryKey: ['contractors'],
+        queryFn: contractorsApi.getAll,
     });
 
     const expense = expenses?.find((e) => e.id === expenseId);
@@ -61,7 +67,7 @@ function ExpenseDetail() {
             amount: expense.amount,
             date: dayjs(expense.date),
             status: expense.status,
-            vendor: expense.vendor ?? '',
+            contractorId: expense.contractorId,
             note: expense.note ?? '',
         });
         setIsEditOpen(true);
@@ -79,7 +85,7 @@ function ExpenseDetail() {
                 amount: values.amount,
                 date: values.date.format('YYYY-MM-DD'),
                 status: values.status,
-                vendor: values.vendor?.trim() || null,
+                contractorId: values.contractorId ?? null,
                 note: values.note?.trim() || null,
             });
         });
@@ -150,11 +156,11 @@ function ExpenseDetail() {
                                 <span className="amt">{expense.subcategoryName}</span>
                             </div>
                         )}
-                        {expense.vendor && (
-                            <div className="nc-row">
-                                <span>Dobavljač</span>
-                                <span className="amt">{expense.vendor}</span>
-                            </div>
+                        {expense.contractorName && (
+                            <Link to={`/contractors/${expense.contractorId}`} className="nc-row nc-row-link">
+                                <span>Izvođač</span>
+                                <span className="amt">{expense.contractorName}</span>
+                            </Link>
                         )}
                         {expense.note && (
                             <div className="nc-row">
@@ -212,8 +218,12 @@ function ExpenseDetail() {
                             ]}
                         />
                     </Form.Item>
-                    <Form.Item name="vendor" label="Dobavljač">
-                        <Input placeholder="Dobavljač (opcionalno)" />
+                    <Form.Item name="contractorId" label="Izvođač">
+                        <Select
+                            placeholder="Bez izvođača"
+                            allowClear
+                            options={contractors?.map((c) => ({ value: c.id, label: c.name }))}
+                        />
                     </Form.Item>
                     <Form.Item name="note" label="Napomena">
                         <Input placeholder="Napomena (opcionalno)" />

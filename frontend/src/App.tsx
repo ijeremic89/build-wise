@@ -6,6 +6,9 @@ import CategoryDetail from './pages/CategoryDetail';
 import SubcategoryDetail from './pages/SubcategoryDetail';
 import Expenses from './pages/Expenses';
 import ExpenseDetail from './pages/ExpenseDetail.tsx';
+import Contractors from './pages/Contractors';
+import ContractorDetail from './pages/ContractorDetail';
+import Todos from './pages/Todos';
 import { CategoryIconSprite } from './components/CategoryIcon';
 
 const NACRT_THEME = {
@@ -57,6 +60,8 @@ function App() {
                         </NavLink>
                         <NavLink to="/categories">Kategorije</NavLink>
                         <NavLink to="/expenses">Troškovi</NavLink>
+                        <NavLink to="/contractors">Izvođači</NavLink>
+                        <NavLink to="/todos">Zadaci</NavLink>
                     </nav>
                 </header>
 
@@ -68,6 +73,9 @@ function App() {
                         <Route path="/categories/:categoryId/subcategories/:subcategoryId" element={<SubcategoryDetail />} />
                         <Route path="/expenses" element={<Expenses />} />
                         <Route path="/expenses/:id" element={<ExpenseDetail />} />
+                        <Route path="/contractors" element={<Contractors />} />
+                        <Route path="/contractors/:id" element={<ContractorDetail />} />
+                        <Route path="/todos" element={<Todos />} />
                     </Routes>
                 </main>
             </AntApp>

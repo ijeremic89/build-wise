@@ -13,7 +13,8 @@ public record ExpenseDto(
         BigDecimal amount,
         LocalDate date,
         ExpenseStatus status,
-        String vendor,
+        Long contractorId,
+        String contractorName,
         String note
 ) {
     public static ExpenseDto from(Expense e) {
@@ -27,7 +28,8 @@ public record ExpenseDto(
                 e.getAmount(),
                 e.getDate(),
                 e.getStatus(),
-                e.getVendor(),
+                e.getContractor() != null ? e.getContractor().getId() : null,
+                e.getContractor() != null ? e.getContractor().getName() : null,
                 e.getNote()
         );
     }

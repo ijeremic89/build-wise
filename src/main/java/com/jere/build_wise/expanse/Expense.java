@@ -1,6 +1,7 @@
 package com.jere.build_wise.expanse;
 
 import com.jere.build_wise.category.Category;
+import com.jere.build_wise.contractor.Contractor;
 import com.jere.build_wise.subcategory.Subcategory;
 import com.jere.build_wise.user.User;
 import jakarta.persistence.*;
@@ -48,8 +49,9 @@ public class Expense {
     @Column(nullable = false, length = 20)
     private ExpenseStatus status = ExpenseStatus.PLANNED;
 
-    @Column(length = 255)
-    private String vendor;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contractor_id")
+    private Contractor contractor;
 
     @Column(columnDefinition = "TEXT")
     private String note;

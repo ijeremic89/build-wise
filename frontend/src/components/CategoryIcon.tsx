@@ -89,6 +89,11 @@ export function CategoryIconSprite() {
                 <symbol id="icon-default" viewBox="0 0 24 24">
                     <rect x="5" y="5" width="14" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
                 </symbol>
+                <symbol id="icon-contractor" viewBox="0 0 24 24">
+                    <path d="M4 15a8 8 0 0 1 16 0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M3 15h18v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                    <path d="M12 7V4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </symbol>
             </defs>
         </svg>
     );

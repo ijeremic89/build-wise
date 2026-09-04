@@ -6,6 +6,7 @@ import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { expensesApi } from '../api/expenses';
 import { categoriesApi } from '../api/categories';
+import { contractorsApi } from '../api/contractors';
 import type { Expense, ExpenseRequest, ExpenseStatus } from '../types';
 
 function Expenses() {
@@ -18,6 +19,11 @@ function Expenses() {
     const { data: categories } = useQuery({
         queryKey: ['categories'],
         queryFn: categoriesApi.getAll,
+    });
+
+    const { data: contractors } = useQuery({
+        queryKey: ['contractors'],
+        queryFn: contractorsApi.getAll,
     });
 
     const { data: expenses, isLoading } = useQuery({
@@ -46,7 +52,7 @@ function Expenses() {
                 amount: values.amount,
                 date: values.date.format('YYYY-MM-DD'),
                 status: values.status,
-                vendor: values.vendor?.trim() || null,
+                contractorId: values.contractorId ?? null,
                 note: values.note?.trim() || null,
             });
         });
@@ -64,6 +70,7 @@ function Expenses() {
             render: (name: string, expense) => <Link to={`/expenses/${expense.id}`}>{name}</Link>,
         },
         { title: 'Kategorija', dataIndex: 'categoryName' },
+        { title: 'Izvođač', dataIndex: 'contractorName', render: (name: string | null) => name ?? '—' },
         {
             title: 'Iznos',
             dataIndex: 'amount',
@@ -154,8 +161,12 @@ function Expenses() {
                             ]}
                         />
                     </Form.Item>
-                    <Form.Item name="vendor" label="Dobavljač">
-                        <Input placeholder="Dobavljač (opcionalno)" />
+                    <Form.Item name="contractorId" label="Izvođač">
+                        <Select
+                            placeholder="Bez izvođača"
+                            allowClear
+                            options={contractors?.map((c) => ({ value: c.id, label: c.name }))}
+                        />
                     </Form.Item>
                     <Form.Item name="note" label="Napomena">
                         <Input placeholder="Napomena (opcionalno)" />

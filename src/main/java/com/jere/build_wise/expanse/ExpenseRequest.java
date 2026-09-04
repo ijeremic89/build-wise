@@ -11,6 +11,6 @@ public record ExpenseRequest(
         @NotNull @Positive BigDecimal amount,
         @NotNull LocalDate date,
         @NotNull ExpenseStatus status,
-        String vendor,
+        Long contractorId,
         String note
 ) {}
