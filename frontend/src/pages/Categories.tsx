@@ -1,12 +1,20 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { categoriesApi, subcategoriesApi } from '../api/categories';
-import type { CategoryRequest, Subcategory, SubcategoryRequest } from '../types';
+import { Row, Col, Card, Avatar, Typography, Modal, Form, Input, InputNumber, Spin, Alert, App as AntApp } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { categoriesApi } from '../api/categories';
+import type { CategoryRequest } from '../types';
+import { iconForCategory } from '../utils/categoryIcons';
+
+const { Text } = Typography;
 
 function Categories() {
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const [name, setName] = useState('');
-    const [plannedBudget, setPlannedBudget] = useState('');
+    const { message } = AntApp.useApp();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [form] = Form.useForm();
 
     const { data: categories, isLoading, isError } = useQuery({
         queryKey: ['categories'],
@@ -17,209 +25,90 @@ function Categories() {
         mutationFn: (request: CategoryRequest) => categoriesApi.create(request),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['categories'] });
-            setName('');
-            setPlannedBudget('');
+            setIsModalOpen(false);
+            form.resetFields();
+        },
+        onError: () => {
+            message.error('Greška pri dodavanju kategorije.');
         },
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => categoriesApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-        },
-    });
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!name.trim()) return;
-
-        createMutation.mutate({
-            name: name.trim(),
-            plannedBudget: plannedBudget !== '' ? Number(plannedBudget) : null,
+    const handleCreate = () => {
+        form.validateFields().then((values) => {
+            createMutation.mutate({
+                name: values.name.trim(),
+                plannedBudget: values.plannedBudget ?? null,
+                description: values.description?.trim() || null,
+            });
         });
     };
 
-    if (isLoading) return <p>Učitavanje...</p>;
-    if (isError) return <p>Greška pri dohvaćanju kategorija.</p>;
+    if (isLoading) return <Spin style={{ marginTop: 40 }} />;
+    if (isError) return <Alert type="error" message="Greška pri dohvaćanju kategorija." showIcon />;
 
     return (
         <div>
             <h1>Kategorije</h1>
 
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="Naziv kategorije"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                />
-                <input
-                    type="number"
-                    placeholder="Planirani budžet"
-                    value={plannedBudget}
-                    onChange={(e) => setPlannedBudget(e.target.value)}
-                />
-                <button type="submit" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? 'Dodajem...' : 'Dodaj kategoriju'}
-                </button>
-                {createMutation.isError && (
-                    <p style={{ color: 'red' }}>Greška pri dodavanju kategorije.</p>
-                )}
-            </form>
-
-            <ul>
+            <Row gutter={[16, 16]} justify="center">
                 {categories?.map((category) => (
-                    <li key={category.id}>
-                        <strong>{category.name}</strong>
-                        {category.plannedBudget !== null && (
-                            <span> — planirano: {category.plannedBudget} €</span>
-                        )}
-                        <button
-                            onClick={() => deleteMutation.mutate(category.id)}
-                            disabled={deleteMutation.isPending}
+                    <Col key={category.id}>
+                        <Card
+                            hoverable
+                            onClick={() => navigate(`/categories/${category.id}`)}
+                            styles={{ body: { padding: 20 } }}
+                            style={{ width: 140, textAlign: 'center' }}
                         >
-                            Obriši
-                        </button>
-
-                        <SubcategoryList categoryId={category.id} subcategories={category.subcategories} />
-                        <SubcategoryForm categoryId={category.id} />
-                    </li>
+                            <Avatar size={64} style={{ backgroundColor: 'var(--accent-bg)', fontSize: 32 }}>
+                                {iconForCategory(category.name)}
+                            </Avatar>
+                            <div style={{ marginTop: 12 }}>
+                                <Text strong>{category.name}</Text>
+                            </div>
+                        </Card>
+                    </Col>
                 ))}
-            </ul>
+
+                <Col>
+                    <Card
+                        hoverable
+                        onClick={() => setIsModalOpen(true)}
+                        styles={{ body: { padding: 20 } }}
+                        style={{ width: 140, textAlign: 'center', borderStyle: 'dashed' }}
+                    >
+                        <Avatar size={64} style={{ backgroundColor: 'transparent', color: 'var(--accent)', fontSize: 28 }} icon={<PlusOutlined />} />
+                        <div style={{ marginTop: 12 }}>
+                            <Text strong>Dodaj kategoriju</Text>
+                        </div>
+                    </Card>
+                </Col>
+            </Row>
+
+            <Modal
+                title="Nova kategorija"
+                open={isModalOpen}
+                onOk={handleCreate}
+                onCancel={() => {
+                    setIsModalOpen(false);
+                    form.resetFields();
+                }}
+                confirmLoading={createMutation.isPending}
+                okText="Dodaj"
+                cancelText="Odustani"
+            >
+                <Form form={form} layout="vertical">
+                    <Form.Item name="name" label="Naziv" rules={[{ required: true, message: 'Unesi naziv kategorije' }]}>
+                        <Input placeholder="Naziv kategorije" />
+                    </Form.Item>
+                    <Form.Item name="description" label="Opis">
+                        <Input.TextArea placeholder="Opis kategorije (opcionalno)" rows={3} />
+                    </Form.Item>
+                    <Form.Item name="plannedBudget" label="Planirani budžet">
+                        <InputNumber style={{ width: '100%' }} min={0} placeholder="0" addonAfter="€" />
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
-    );
-}
-
-function SubcategoryList({
-                             categoryId,
-                             subcategories,
-                         }: {
-    categoryId: number;
-    subcategories: Subcategory[];
-}) {
-    const queryClient = useQueryClient();
-    const [editingId, setEditingId] = useState<number | null>(null);
-    const [editName, setEditName] = useState('');
-    const [editBudget, setEditBudget] = useState('');
-
-    const updateMutation = useMutation({
-        mutationFn: ({ id, request }: { id: number; request: SubcategoryRequest }) =>
-            subcategoriesApi.update(id, request),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-            setEditingId(null);
-        },
-    });
-
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => subcategoriesApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-        },
-    });
-
-    if (subcategories.length === 0) return null;
-
-    const startEdit = (sub: Subcategory) => {
-        setEditingId(sub.id);
-        setEditName(sub.name);
-        setEditBudget(sub.plannedBudget !== null ? String(sub.plannedBudget) : '');
-    };
-
-    const saveEdit = (id: number) => {
-        if (!editName.trim()) return;
-        updateMutation.mutate({
-            id,
-            request: {
-                categoryId,
-                name: editName.trim(),
-                plannedBudget: editBudget !== '' ? Number(editBudget) : null,
-            },
-        });
-    };
-
-    return (
-        <ul>
-            {subcategories.map((sub) => (
-                <li key={sub.id}>
-                    {editingId === sub.id ? (
-                        <>
-                            <input value={editName} onChange={(e) => setEditName(e.target.value)} />
-                            <input
-                                type="number"
-                                value={editBudget}
-                                onChange={(e) => setEditBudget(e.target.value)}
-                            />
-                            <button onClick={() => saveEdit(sub.id)} disabled={updateMutation.isPending}>
-                                Spremi
-                            </button>
-                            <button onClick={() => setEditingId(null)}>Odustani</button>
-                        </>
-                    ) : (
-                        <>
-                            {sub.name}
-                            {sub.plannedBudget !== null && ` — ${sub.plannedBudget} €`}
-                            <button onClick={() => startEdit(sub)}>Uredi</button>
-                            <button
-                                onClick={() => deleteMutation.mutate(sub.id)}
-                                disabled={deleteMutation.isPending}
-                            >
-                                Obriši
-                            </button>
-                        </>
-                    )}
-                </li>
-            ))}
-        </ul>
-    );
-}
-
-function SubcategoryForm({ categoryId }: { categoryId: number }) {
-    const queryClient = useQueryClient();
-    const [name, setName] = useState('');
-    const [plannedBudget, setPlannedBudget] = useState('');
-
-    const createMutation = useMutation({
-        mutationFn: (request: SubcategoryRequest) => subcategoriesApi.create(request),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['categories'] });
-            setName('');
-            setPlannedBudget('');
-        },
-    });
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!name.trim()) return;
-
-        createMutation.mutate({
-            categoryId,
-            name: name.trim(),
-            plannedBudget: plannedBudget !== '' ? Number(plannedBudget) : null,
-        });
-    };
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                placeholder="Naziv podkategorije"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-            />
-            <input
-                type="number"
-                placeholder="Planirani budžet"
-                value={plannedBudget}
-                onChange={(e) => setPlannedBudget(e.target.value)}
-            />
-            <button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? 'Dodajem...' : 'Dodaj podkategoriju'}
-            </button>
-            {createMutation.isError && (
-                <p style={{ color: 'red' }}>Greška pri dodavanju podkategorije.</p>
-            )}
-        </form>
     );
 }
 

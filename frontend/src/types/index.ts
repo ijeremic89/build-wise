@@ -10,12 +10,18 @@ export interface Category {
     id: number;
     name: string;
     plannedBudget: number | null;
+    startDate: string | null;
+    endDate: string | null;
+    description: string | null;
     subcategories: Subcategory[];
 }
 
 export interface CategoryRequest {
     name: string;
     plannedBudget: number | null;
+    startDate?: string | null;
+    endDate?: string | null;
+    description?: string | null;
 }
 
 export interface SubcategoryRequest {
