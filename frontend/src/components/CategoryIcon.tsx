@@ -90,9 +90,9 @@ export function CategoryIconSprite() {
                     <rect x="5" y="5" width="14" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
                 </symbol>
                 <symbol id="icon-contractor" viewBox="0 0 24 24">
-                    <path d="M4 15a8 8 0 0 1 16 0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    <path d="M3 15h18v2a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
-                    <path d="M12 7V4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M6 12a6 6 0 0 1 12 0" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M4 12h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    <path d="M8 12v2a4 4 0 0 0 8 0v-2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </symbol>
                 <symbol id="icon-file" viewBox="0 0 24 24">
                     <path d="M7 3h7l4 4v14H7z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
