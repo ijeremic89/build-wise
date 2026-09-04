@@ -1,4 +1,5 @@
-import { Routes, Route, NavLink } from 'react-router-dom';
+import { useState } from 'react';
+import { Routes, Route, NavLink, Link } from 'react-router-dom';
 import { ConfigProvider, App as AntApp } from 'antd';
 import Dashboard from './pages/Dashboard';
 import Categories from './pages/Categories';
@@ -47,28 +48,53 @@ const NACRT_THEME = {
     },
 };
 
+const NAV_ITEMS = [
+    { to: '/categories', label: 'Kategorije' },
+    { to: '/expenses', label: 'Troškovi' },
+    { to: '/contractors', label: 'Izvođači' },
+    { to: '/todos', label: 'Zadaci' },
+];
+
 function App() {
+    const [menuOpen, setMenuOpen] = useState(false);
+
     return (
         <ConfigProvider theme={NACRT_THEME}>
             <AntApp>
                 <CategoryIconSprite />
                 <header className="topbar">
-                    <span className="brand">
+                    <Link to="/" className="brand">
                         <svg className="brand-icon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
                             <use href="#icon-rohbau" />
                         </svg>
                         BUILDWISE
-                    </span>
+                    </Link>
                     <nav>
-                        <NavLink to="/" end>
-                            Dashboard
-                        </NavLink>
-                        <NavLink to="/categories">Kategorije</NavLink>
-                        <NavLink to="/expenses">Troškovi</NavLink>
-                        <NavLink to="/contractors">Izvođači</NavLink>
-                        <NavLink to="/todos">Zadaci</NavLink>
+                        {NAV_ITEMS.map((item) => (
+                            <NavLink key={item.to} to={item.to}>
+                                {item.label}
+                            </NavLink>
+                        ))}
                     </nav>
+                    <button
+                        type="button"
+                        className="menu-toggle"
+                        aria-label={menuOpen ? 'Zatvori izbornik' : 'Otvori izbornik'}
+                        onClick={() => setMenuOpen((open) => !open)}
+                    >
+                        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                            <use href={menuOpen ? '#icon-close' : '#icon-menu'} />
+                        </svg>
+                    </button>
                 </header>
+
+                <nav className={`mobile-nav${menuOpen ? ' is-open' : ''}`}>
+                    {NAV_ITEMS.map((item) => (
+                        <NavLink key={item.to} to={item.to} onClick={() => setMenuOpen(false)}>
+                            {item.label}
+                        </NavLink>
+                    ))}
+                </nav>
 
                 <main>
                     <Routes>

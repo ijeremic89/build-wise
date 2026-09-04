@@ -11,7 +11,7 @@ export default defineConfig({
                 name: 'Buildwise',
                 short_name: 'Buildwise',
                 description: 'Praćenje budžeta za gradnju kuće',
-                theme_color: '#1e293b',
+                theme_color: '#2b4c7e',
                 background_color: '#ffffff',
                 display: 'standalone',
                 icons: [
@@ -30,6 +30,7 @@ export default defineConfig({
         })
     ],
     server: {
+        host: true,
         proxy: {
             '/api': 'http://localhost:8080'
         }

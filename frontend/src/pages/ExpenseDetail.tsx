@@ -112,7 +112,7 @@ function ExpenseDetail() {
             <div className="nc-detail" style={{ marginTop: 16 }}>
                 <div className="nc-detail-head">
                     <h1>{expense.name}</h1>
-                    <div className="actions">
+                    <div className="actions hide-on-mobile">
                         <Button className="nc-btn" onClick={openEdit}>
                             Uredi
                         </Button>
@@ -132,7 +132,7 @@ function ExpenseDetail() {
                             <div className="label">Iznos</div>
                             <div className="value">{expense.amount.toLocaleString('hr-HR')} €</div>
                         </div>
-                        <div className="nc-stat">
+                        <div className="nc-stat hide-on-mobile">
                             <div className="label">Status</div>
                             <div className="value" style={{ fontSize: 16 }}>
                                 <span className={`nc-tag${expense.status === 'PAID' ? ' is-good' : ''}`}>
@@ -143,6 +143,12 @@ function ExpenseDetail() {
                     </div>
 
                     <div className="nc-table" style={{ marginTop: 24 }}>
+                        <div className="nc-row mobile-only-row">
+                            <span>Status</span>
+                            <span className={`nc-tag${expense.status === 'PAID' ? ' is-good' : ''}`}>
+                                {expense.status === 'PLANNED' ? 'Planirano' : 'Plaćeno'}
+                            </span>
+                        </div>
                         <div className="nc-row">
                             <span>Datum</span>
                             <span className="amt">{expense.date}</span>
@@ -172,6 +178,19 @@ function ExpenseDetail() {
                     </div>
 
                     <AttachmentsPanel ownerType="EXPENSE" ownerId={expense.id} />
+
+                    <div className="mobile-only-row" style={{ justifyContent: 'flex-end', gap: 8, marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+                        <Button className="nc-btn" onClick={openEdit}>
+                            Uredi
+                        </Button>
+                        <Button
+                            className="nc-btn nc-btn-danger"
+                            onClick={handleDelete}
+                            loading={deleteMutation.isPending}
+                        >
+                            Obriši
+                        </Button>
+                    </div>
                 </div>
             </div>
 

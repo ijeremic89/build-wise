@@ -103,7 +103,7 @@ function ContractorDetail() {
                         </svg>
                     </span>
                     <h1>{contractor.name}</h1>
-                    <div className="actions">
+                    <div className="actions hide-on-mobile">
                         <Button className="nc-btn" onClick={openEdit}>
                             Uredi
                         </Button>
@@ -167,6 +167,19 @@ function ContractorDetail() {
                                 <span className="amt">{expense.amount.toLocaleString('hr-HR')} €</span>
                             </Link>
                         ))}
+                    </div>
+
+                    <div className="mobile-only-row" style={{ justifyContent: 'flex-end', gap: 8, marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+                        <Button className="nc-btn" onClick={openEdit}>
+                            Uredi
+                        </Button>
+                        <Button
+                            className="nc-btn nc-btn-danger"
+                            onClick={handleDelete}
+                            loading={deleteMutation.isPending}
+                        >
+                            Obriši
+                        </Button>
                     </div>
                 </div>
             </div>

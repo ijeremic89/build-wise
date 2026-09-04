@@ -69,18 +69,36 @@ function Expenses() {
             dataIndex: 'name',
             render: (name: string, expense) => <Link to={`/expenses/${expense.id}`}>{name}</Link>,
         },
-        { title: 'Kategorija', dataIndex: 'categoryName' },
-        { title: 'Izvođač', dataIndex: 'contractorName', render: (name: string | null) => name ?? '—' },
+        {
+            title: 'Kategorija',
+            dataIndex: 'categoryName',
+            className: 'mobile-hide-cell',
+            onHeaderCell: () => ({ className: 'mobile-hide-cell' }),
+        },
+        {
+            title: 'Izvođač',
+            dataIndex: 'contractorName',
+            render: (name: string | null) => name ?? '—',
+            className: 'mobile-hide-cell',
+            onHeaderCell: () => ({ className: 'mobile-hide-cell' }),
+        },
         {
             title: 'Iznos',
             dataIndex: 'amount',
             align: 'right',
             render: (amount: number) => <span className="tabular-cell">{amount.toLocaleString('hr-HR')} €</span>,
         },
-        { title: 'Datum', dataIndex: 'date', className: 'tabular-cell' },
+        {
+            title: 'Datum',
+            dataIndex: 'date',
+            className: 'tabular-cell mobile-hide-cell',
+            onHeaderCell: () => ({ className: 'mobile-hide-cell' }),
+        },
         {
             title: 'Status',
             dataIndex: 'status',
+            className: 'mobile-hide-cell',
+            onHeaderCell: () => ({ className: 'mobile-hide-cell' }),
             render: (status: ExpenseStatus) => (
                 <span className={`nc-tag${status === 'PAID' ? ' is-good' : ''}`}>
                     {status === 'PLANNED' ? 'Planirano' : 'Plaćeno'}

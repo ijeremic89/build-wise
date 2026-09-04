@@ -68,8 +68,6 @@ function Dashboard() {
 
     return (
         <div>
-            <h1>Dashboard</h1>
-
             <div className="nc-form-toolbar">
                 <div className="nc-section-label" style={{ margin: 0, flex: 1 }}>
                     <span>Pregled projekta</span>

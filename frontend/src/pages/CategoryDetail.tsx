@@ -134,7 +134,7 @@ function CategoryDetail() {
                         <CategoryIcon name={category.name} />
                     </span>
                     <h1>{category.name}</h1>
-                    <div className="actions">
+                    <div className="actions hide-on-mobile">
                         <Button className="nc-btn" onClick={openEdit}>
                             Uredi
                         </Button>
@@ -213,6 +213,19 @@ function CategoryDetail() {
                     </div>
 
                     <AttachmentsPanel ownerType="CATEGORY" ownerId={category.id} />
+
+                    <div className="mobile-only-row" style={{ justifyContent: 'flex-end', gap: 8, marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--line)' }}>
+                        <Button className="nc-btn" onClick={openEdit}>
+                            Uredi
+                        </Button>
+                        <Button
+                            className="nc-btn nc-btn-danger"
+                            onClick={handleDelete}
+                            loading={deleteMutation.isPending}
+                        >
+                            Obriši
+                        </Button>
+                    </div>
                 </div>
             </div>
 

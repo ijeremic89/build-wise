@@ -102,6 +102,12 @@ export function CategoryIconSprite() {
                     <path d="M12 15V5M8 9l4-4 4 4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                     <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 </symbol>
+                <symbol id="icon-menu" viewBox="0 0 24 24">
+                    <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </symbol>
+                <symbol id="icon-close" viewBox="0 0 24 24">
+                    <path d="M5 5l14 14M19 5L5 19" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </symbol>
             </defs>
         </svg>
     );

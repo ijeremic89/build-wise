@@ -89,6 +89,8 @@ a {
   font-size: 16px;
   letter-spacing: 0.1em;
   color: var(--ink);
+  text-decoration: none;
+  flex-shrink: 0;
 }
 
 .topbar .brand-icon {
@@ -120,6 +122,23 @@ a {
 .topbar nav a.active {
   color: var(--ink);
   border-bottom-color: var(--accent);
+}
+
+.menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 8px;
+  margin-left: auto;
+  color: var(--ink);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mobile-nav {
+  display: none;
 }
 
 main {
@@ -484,6 +503,10 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
+.mobile-only-row {
+  display: none;
+}
+
 @media (max-width: 768px) {
   main {
     padding: 28px 18px 48px;
@@ -492,4 +515,54 @@ main {
     padding: 0 18px;
     gap: 20px;
   }
+  .topbar nav {
+    display: none;
+  }
+  .menu-toggle {
+    display: flex;
+  }
+  .mobile-nav.is-open {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* stack stat pairs (planirano/potrošeno) instead of side by side */
+  .nc-stats {
+    grid-template-columns: 1fr;
+  }
+  .nc-stat + .nc-stat {
+    border-left: none;
+    border-top: 1px solid var(--line);
+  }
+
+  /* utility toggles for content that only appears in one layout */
+  .hide-on-mobile {
+    display: none !important;
+  }
+  .mobile-only-row {
+    display: flex;
+  }
+  .mobile-hide-cell {
+    display: none;
+  }
+}
+
+.mobile-nav {
+  border-bottom: 1px solid var(--line);
+}
+
+.mobile-nav a {
+  padding: 14px 18px;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--faint);
+  border-top: 1px solid var(--line);
+}
+
+.mobile-nav a.active {
+  color: var(--ink);
 }
