@@ -98,3 +98,11 @@ export interface Attachment {
     createdAt: string;
     url: string;
 }
+
+export interface ProjectSettings {
+    plannedConstructionCost: number;
+}
+
+export interface ProjectSettingsRequest {
+    plannedConstructionCost: number;
+}
