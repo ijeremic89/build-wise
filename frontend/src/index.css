@@ -81,11 +81,19 @@ a {
 }
 
 .topbar .brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--mono);
   font-weight: 600;
-  font-size: 13px;
+  font-size: 16px;
   letter-spacing: 0.1em;
   color: var(--ink);
+}
+
+.topbar .brand-icon {
+  color: var(--accent);
+  flex-shrink: 0;
 }
 
 .topbar nav {
@@ -294,7 +302,7 @@ main {
 }
 
 .nc-progress {
-  height: 6px;
+  height: 12px;
   background: var(--accent-tint);
   border: 1px solid var(--line);
   margin-bottom: 30px;

@@ -53,7 +53,12 @@ function App() {
             <AntApp>
                 <CategoryIconSprite />
                 <header className="topbar">
-                    <span className="brand">BUILDWISE</span>
+                    <span className="brand">
+                        <svg className="brand-icon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                            <use href="#icon-rohbau" />
+                        </svg>
+                        BUILDWISE
+                    </span>
                     <nav>
                         <NavLink to="/" end>
                             Dashboard

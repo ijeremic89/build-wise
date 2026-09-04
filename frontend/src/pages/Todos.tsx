@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal, Form, Input, DatePicker, Checkbox, Spin, Alert, Button, App as AntApp } from 'antd';
+import dayjs from 'dayjs';
 import { todosApi } from '../api/todos';
 import type { TodoItem, TodoItemRequest } from '../types';
 
@@ -8,6 +9,7 @@ function Todos() {
     const queryClient = useQueryClient();
     const { message, modal } = AntApp.useApp();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
     const [form] = Form.useForm();
 
     const { data: todos, isLoading, isError } = useQuery({
@@ -25,6 +27,17 @@ function Todos() {
         onError: () => message.error('Greška pri dodavanju zadatka.'),
     });
 
+    const updateMutation = useMutation({
+        mutationFn: ({ id, request }: { id: number; request: TodoItemRequest }) => todosApi.update(id, request),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['todos'] });
+            setIsModalOpen(false);
+            setEditingId(null);
+            form.resetFields();
+        },
+        onError: () => message.error('Greška pri spremanju zadatka.'),
+    });
+
     const toggleMutation = useMutation({
         mutationFn: (item: TodoItem) =>
             todosApi.update(item.id, { title: item.title, done: !item.done, dueDate: item.dueDate }),
@@ -38,13 +51,33 @@ function Todos() {
         onError: () => message.error('Greška pri brisanju zadatka.'),
     });
 
-    const handleCreate = () => {
+    const openAdd = () => {
+        setEditingId(null);
+        form.resetFields();
+        setIsModalOpen(true);
+    };
+
+    const openEdit = (item: TodoItem) => {
+        setEditingId(item.id);
+        form.setFieldsValue({
+            title: item.title,
+            dueDate: item.dueDate ? dayjs(item.dueDate) : undefined,
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleSave = () => {
         form.validateFields().then((values) => {
-            createMutation.mutate({
+            const request: TodoItemRequest = {
                 title: values.title.trim(),
-                done: false,
+                done: editingId ? (todos?.find((t) => t.id === editingId)?.done ?? false) : false,
                 dueDate: values.dueDate ? values.dueDate.format('YYYY-MM-DD') : null,
-            });
+            };
+            if (editingId) {
+                updateMutation.mutate({ id: editingId, request });
+            } else {
+                createMutation.mutate(request);
+            }
         });
     };
 
@@ -75,7 +108,7 @@ function Todos() {
                         Zadaci — {todos?.length ?? 0} ({doneCount} gotovo)
                     </span>
                 </div>
-                <Button className="nc-btn" onClick={() => setIsModalOpen(true)}>
+                <Button className="nc-btn" onClick={openAdd}>
                     + Dodaj zadatak
                 </Button>
             </div>
@@ -96,6 +129,9 @@ function Todos() {
                         </span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             {item.dueDate && <span className="amt">{item.dueDate}</span>}
+                            <Button className="nc-btn nc-btn-icon" onClick={() => openEdit(item)}>
+                                Uredi
+                            </Button>
                             <Button className="nc-btn nc-btn-danger nc-btn-icon" onClick={() => handleDelete(item)}>
                                 Obriši
                             </Button>
@@ -105,15 +141,15 @@ function Todos() {
             </div>
 
             <Modal
-                title="Novi zadatak"
+                title={editingId ? 'Uredi zadatak' : 'Novi zadatak'}
                 open={isModalOpen}
-                onOk={handleCreate}
+                onOk={handleSave}
                 onCancel={() => {
                     setIsModalOpen(false);
-                    form.resetFields();
+                    setEditingId(null);
                 }}
-                confirmLoading={createMutation.isPending}
-                okText="Dodaj"
+                confirmLoading={createMutation.isPending || updateMutation.isPending}
+                okText={editingId ? 'Spremi' : 'Dodaj'}
                 cancelText="Odustani"
             >
                 <Form form={form} layout="vertical">
