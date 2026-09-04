@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Modal, Form, InputNumber, Button, Spin, Alert, App as AntApp } from 'antd';
+import { Modal, Form, InputNumber, Select, Button, Spin, Alert, App as AntApp } from 'antd';
 import { settingsApi } from '../api/settings';
 import { expensesApi } from '../api/expenses';
+import { categoriesApi } from '../api/categories';
 
 function Dashboard() {
     const queryClient = useQueryClient();
     const { message } = AntApp.useApp();
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [form] = Form.useForm();
+    const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
     const { data: settings, isLoading: settingsLoading, isError: settingsError } = useQuery({
         queryKey: ['settings'],
@@ -18,6 +20,11 @@ function Dashboard() {
     const { data: expenses, isLoading: expensesLoading } = useQuery({
         queryKey: ['expenses'],
         queryFn: () => expensesApi.getAll(),
+    });
+
+    const { data: categories } = useQuery({
+        queryKey: ['categories'],
+        queryFn: categoriesApi.getAll,
     });
 
     const updateMutation = useMutation({
@@ -39,6 +46,14 @@ function Dashboard() {
 
     const percent = plannedBudget > 0 ? Math.min(100, Math.round((spent / plannedBudget) * 100)) : 0;
     const isOver = plannedBudget > 0 && spent > plannedBudget;
+
+    const selectedCategory = categories?.find((c) => c.id === selectedCategoryId);
+    const categoryPlanned = selectedCategory?.plannedBudget ?? 0;
+    const categorySpent = (expenses ?? [])
+        .filter((e) => e.categoryId === selectedCategoryId && e.status === 'PAID')
+        .reduce((sum, e) => sum + e.amount, 0);
+    const categoryPercent = categoryPlanned > 0 ? Math.min(100, Math.round((categorySpent / categoryPlanned) * 100)) : 0;
+    const categoryIsOver = categoryPlanned > 0 && categorySpent > categoryPlanned;
 
     const openEdit = () => {
         form.setFieldsValue({ plannedConstructionCost: plannedBudget });
@@ -81,6 +96,40 @@ function Dashboard() {
                     </div>
                 </div>
             </div>
+
+            <div className="nc-section-label" style={{ marginTop: 32 }}>
+                <span>Pregled po kategoriji</span>
+            </div>
+            <Select
+                style={{ width: 280, marginBottom: 16 }}
+                placeholder="Odaberi kategoriju"
+                value={selectedCategoryId}
+                onChange={setSelectedCategoryId}
+                allowClear
+                options={categories?.map((c) => ({ value: c.id, label: c.name }))}
+            />
+
+            {selectedCategory && (
+                <div className="nc-detail">
+                    <div className="nc-detail-body">
+                        <div className="nc-stats">
+                            <div className="nc-stat">
+                                <div className="label">Planirani budžet</div>
+                                <div className="value">{categoryPlanned.toLocaleString('hr-HR')} €</div>
+                            </div>
+                            <div className="nc-stat">
+                                <div className="label">Trenutno potrošeno</div>
+                                <div className="value">{categorySpent.toLocaleString('hr-HR')} €</div>
+                            </div>
+                        </div>
+                        {categoryPlanned > 0 && (
+                            <div className={`nc-progress${categoryIsOver ? ' is-over' : ''}`}>
+                                <div style={{ width: `${categoryPercent}%` }} />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <Modal
                 title="Uredi planirani trošak gradnje"
