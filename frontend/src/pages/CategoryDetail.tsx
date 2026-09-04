@@ -169,17 +169,22 @@ function CategoryDetail() {
                                 Nema podkategorija.
                             </div>
                         )}
-                        {category.subcategories.map((sub) => (
-                            <button
-                                key={sub.id}
-                                type="button"
-                                className="nc-row nc-row-link"
-                                onClick={() => navigate(`/categories/${category.id}/subcategories/${sub.id}`)}
-                            >
-                                <span>{sub.name}</span>
-                                <span className="amt">{sub.plannedBudget !== null ? `${sub.plannedBudget} €` : '—'}</span>
-                            </button>
-                        ))}
+                        {category.subcategories.map((sub) => {
+                            const subSpent = (expenses ?? [])
+                                .filter((e) => e.subcategoryId === sub.id && e.status === 'PAID')
+                                .reduce((sum, e) => sum + e.amount, 0);
+                            return (
+                                <button
+                                    key={sub.id}
+                                    type="button"
+                                    className="nc-row nc-row-link"
+                                    onClick={() => navigate(`/categories/${category.id}/subcategories/${sub.id}`)}
+                                >
+                                    <span>{sub.name}</span>
+                                    <span className="amt">{subSpent.toLocaleString('hr-HR')} €</span>
+                                </button>
+                            );
+                        })}
                     </div>
                     <Button className="nc-btn" style={{ marginTop: 12 }} onClick={openAddSub}>
                         + Dodaj podkategoriju
