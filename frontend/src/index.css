@@ -328,6 +328,10 @@ main {
   overflow: hidden;
 }
 
+.nc-detail-body > .nc-progress:last-child {
+  margin-bottom: 0;
+}
+
 .nc-progress > div {
   height: 100%;
   background: var(--accent);
@@ -335,6 +339,48 @@ main {
 
 .nc-progress.is-over > div {
   background: var(--danger);
+}
+
+.nc-stats-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.nc-budget-bar {
+  position: relative;
+  height: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.nc-budget-bar > div {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--accent);
+}
+
+.nc-budget-bar .nc-budget-bar-planned {
+  opacity: 0.35;
+}
+
+.nc-budget-bar .nc-budget-bar-planned.is-over {
+  background: var(--danger);
+}
+
+.nc-budget-bar .nc-budget-bar-spent.is-over {
+  background: var(--danger);
+}
+
+.nc-budget-caption {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--faint);
 }
 
 .nc-sub-title {
@@ -533,6 +579,11 @@ main {
   .nc-stat + .nc-stat {
     border-left: none;
     border-top: 1px solid var(--line);
+  }
+
+  .nc-budget-caption {
+    flex-direction: column;
+    gap: 4px;
   }
 
   /* utility toggles for content that only appears in one layout */

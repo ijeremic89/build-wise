@@ -39,13 +39,18 @@ function Dashboard() {
     if (settingsLoading || expensesLoading) return <Spin style={{ marginTop: 40 }} />;
     if (settingsError) return <Alert type="error" message="Greška pri dohvaćanju postavki." showIcon />;
 
-    const plannedBudget = settings?.plannedConstructionCost ?? 0;
+    const budget = settings?.plannedConstructionCost ?? 0;
+    const plannedFromCategories = (categories ?? [])
+        .filter((c) => c.name !== 'Zemljište')
+        .reduce((sum, c) => sum + (c.plannedBudget ?? 0), 0);
     const spent = (expenses ?? [])
         .filter((e) => e.categoryName !== 'Zemljište' && e.status === 'PAID')
         .reduce((sum, e) => sum + e.amount, 0);
 
-    const percent = plannedBudget > 0 ? Math.min(100, Math.round((spent / plannedBudget) * 100)) : 0;
-    const isOver = plannedBudget > 0 && spent > plannedBudget;
+    const plannedPercentOfBudget = budget > 0 ? Math.min(100, Math.round((plannedFromCategories / budget) * 100)) : 0;
+    const spentPercentOfBudget = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
+    const isPlannedOverBudget = budget > 0 && plannedFromCategories > budget;
+    const isSpentOverBudget = budget > 0 && spent > budget;
 
     const selectedCategory = categories?.find((c) => c.id === selectedCategoryId);
     const categoryPlanned = selectedCategory?.plannedBudget ?? 0;
@@ -56,7 +61,7 @@ function Dashboard() {
     const categoryIsOver = categoryPlanned > 0 && categorySpent > categoryPlanned;
 
     const openEdit = () => {
-        form.setFieldsValue({ plannedConstructionCost: plannedBudget });
+        form.setFieldsValue({ plannedConstructionCost: budget });
         setIsEditOpen(true);
     };
 
@@ -73,24 +78,40 @@ function Dashboard() {
                     <span>Pregled projekta</span>
                 </div>
                 <Button className="nc-btn" onClick={openEdit}>
-                    Uredi planirani trošak
+                    Uredi budžet
                 </Button>
             </div>
 
             <div className="nc-detail">
                 <div className="nc-detail-body">
-                    <div className="nc-stats">
+                    <div className="nc-stats nc-stats-3">
+                        <div className="nc-stat">
+                            <div className="label">Budžet</div>
+                            <div className="value">{budget.toLocaleString('hr-HR')} €</div>
+                        </div>
                         <div className="nc-stat">
                             <div className="label">Planirani trošak gradnje</div>
-                            <div className="value">{plannedBudget.toLocaleString('hr-HR')} €</div>
+                            <div className="value">{plannedFromCategories.toLocaleString('hr-HR')} €</div>
                         </div>
                         <div className="nc-stat">
                             <div className="label">Trenutni trošak</div>
                             <div className="value">{spent.toLocaleString('hr-HR')} €</div>
                         </div>
                     </div>
-                    <div className={`nc-progress${isOver ? ' is-over' : ''}`}>
-                        <div style={{ width: `${percent}%` }} />
+
+                    <div className="nc-budget-bar">
+                        <div
+                            className={`nc-budget-bar-planned${isPlannedOverBudget ? ' is-over' : ''}`}
+                            style={{ width: `${plannedPercentOfBudget}%` }}
+                        />
+                        <div
+                            className={`nc-budget-bar-spent${isSpentOverBudget ? ' is-over' : ''}`}
+                            style={{ width: `${spentPercentOfBudget}%` }}
+                        />
+                    </div>
+                    <div className="nc-budget-caption">
+                        <span>Planirano: {plannedPercentOfBudget}% budžeta</span>
+                        <span>Potrošeno: {spentPercentOfBudget}% budžeta</span>
                     </div>
                 </div>
             </div>
@@ -130,7 +151,7 @@ function Dashboard() {
             )}
 
             <Modal
-                title="Uredi planirani trošak gradnje"
+                title="Uredi budžet"
                 open={isEditOpen}
                 onOk={handleSave}
                 onCancel={() => setIsEditOpen(false)}
@@ -141,7 +162,7 @@ function Dashboard() {
                 <Form form={form} layout="vertical">
                     <Form.Item
                         name="plannedConstructionCost"
-                        label="Planirani trošak gradnje"
+                        label="Budžet"
                         rules={[{ required: true, message: 'Unesi iznos' }]}
                     >
                         <InputNumber style={{ width: '100%' }} min={0} addonAfter="€" />
