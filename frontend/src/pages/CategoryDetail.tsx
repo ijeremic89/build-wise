@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Spin, Alert, Modal, Form, Input, InputNumber, Button, App as AntApp } from 'antd';
+import { Spin, Alert, Modal, Form, Input, InputNumber, Checkbox, Button, App as AntApp } from 'antd';
 import { categoriesApi, subcategoriesApi } from '../api/categories';
 import { expensesApi } from '../api/expenses';
 import type { CategoryRequest, SubcategoryRequest } from '../types';
@@ -17,6 +17,7 @@ function CategoryDetail() {
 
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [editForm] = Form.useForm();
+    const manualBudget = Form.useWatch('manualBudget', editForm);
 
     const [isSubModalOpen, setIsSubModalOpen] = useState(false);
     const [subForm] = Form.useForm();
@@ -73,7 +74,8 @@ function CategoryDetail() {
         .filter((e) => e.categoryId === category.id && e.status === 'PAID')
         .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id));
 
-    const plannedBudget = category.plannedBudget ?? 0;
+    const subcategoriesBudgetSum = category.subcategories.reduce((sum, s) => sum + (s.plannedBudget ?? 0), 0);
+    const plannedBudget = category.plannedBudget ?? subcategoriesBudgetSum;
     const percent = plannedBudget > 0 ? Math.min(100, Math.round((spent / plannedBudget) * 100)) : 0;
     const isOver = plannedBudget > 0 && spent > plannedBudget;
 
@@ -81,6 +83,7 @@ function CategoryDetail() {
         editForm.setFieldsValue({
             name: category.name,
             description: category.description ?? '',
+            manualBudget: category.plannedBudget !== null,
             plannedBudget: category.plannedBudget,
         });
         setIsEditOpen(true);
@@ -90,7 +93,7 @@ function CategoryDetail() {
         editForm.validateFields().then((values) => {
             updateMutation.mutate({
                 name: values.name.trim(),
-                plannedBudget: values.plannedBudget ?? null,
+                plannedBudget: values.manualBudget ? (values.plannedBudget ?? null) : null,
                 description: values.description?.trim() || null,
             });
         });
@@ -155,6 +158,11 @@ function CategoryDetail() {
                         <div className="nc-stat">
                             <div className="label">Planirani budžet</div>
                             <div className="value">{plannedBudget.toLocaleString('hr-HR')} €</div>
+                            {category.plannedBudget === null && (
+                                <div style={{ fontSize: 11, color: 'var(--faint)', marginTop: 4 }}>
+                                    automatski: zbroj podkategorija
+                                </div>
+                            )}
                         </div>
                         <div className="nc-stat">
                             <div className="label">Trenutno potrošeno</div>
@@ -245,9 +253,18 @@ function CategoryDetail() {
                     <Form.Item name="description" label="Opis">
                         <Input.TextArea placeholder="Opis kategorije (opcionalno)" rows={3} />
                     </Form.Item>
-                    <Form.Item name="plannedBudget" label="Planirani budžet">
-                        <InputNumber style={{ width: '100%' }} min={0} placeholder="0" addonAfter="€" />
+                    <Form.Item name="manualBudget" valuePropName="checked" style={{ marginBottom: 8 }}>
+                        <Checkbox>Ručno postavi planirani budžet</Checkbox>
                     </Form.Item>
+                    {manualBudget ? (
+                        <Form.Item name="plannedBudget" label="Planirani budžet">
+                            <InputNumber style={{ width: '100%' }} min={0} placeholder="0" addonAfter="€" />
+                        </Form.Item>
+                    ) : (
+                        <p className="nc-desc" style={{ marginTop: -8 }}>
+                            Bit će automatski zbroj planiranih budžeta podkategorija ({subcategoriesBudgetSum.toLocaleString('hr-HR')} €).
+                        </p>
+                    )}
                 </Form>
             </Modal>
 

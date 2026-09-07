@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Modal, Form, Input, InputNumber, Spin, Alert, Button, App as AntApp } from 'antd';
+import { Modal, Form, Input, InputNumber, Checkbox, Spin, Alert, Button, App as AntApp } from 'antd';
 import { categoriesApi } from '../api/categories';
 import type { CategoryRequest } from '../types';
 import { CategoryIcon } from '../components/CategoryIcon';
@@ -12,6 +12,7 @@ function Categories() {
     const { message } = AntApp.useApp();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
+    const manualBudget = Form.useWatch('manualBudget', form);
 
     const { data: categories, isLoading, isError } = useQuery({
         queryKey: ['categories'],
@@ -32,7 +33,7 @@ function Categories() {
         form.validateFields().then((values) => {
             createMutation.mutate({
                 name: values.name.trim(),
-                plannedBudget: values.plannedBudget ?? null,
+                plannedBudget: values.manualBudget ? (values.plannedBudget ?? null) : null,
                 description: values.description?.trim() || null,
             });
         });
@@ -89,9 +90,18 @@ function Categories() {
                     <Form.Item name="description" label="Opis">
                         <Input.TextArea placeholder="Opis kategorije (opcionalno)" rows={3} />
                     </Form.Item>
-                    <Form.Item name="plannedBudget" label="Planirani budžet">
-                        <InputNumber style={{ width: '100%' }} min={0} placeholder="0" addonAfter="€" />
+                    <Form.Item name="manualBudget" valuePropName="checked" style={{ marginBottom: 8 }}>
+                        <Checkbox>Ručno postavi planirani budžet</Checkbox>
                     </Form.Item>
+                    {manualBudget ? (
+                        <Form.Item name="plannedBudget" label="Planirani budžet">
+                            <InputNumber style={{ width: '100%' }} min={0} placeholder="0" addonAfter="€" />
+                        </Form.Item>
+                    ) : (
+                        <p className="nc-desc" style={{ marginTop: -8 }}>
+                            Bit će automatski zbroj planiranih budžeta podkategorija.
+                        </p>
+                    )}
                 </Form>
             </Modal>
         </div>

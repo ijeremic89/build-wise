@@ -4,6 +4,11 @@ import { Modal, Form, InputNumber, Select, Button, Spin, Alert, App as AntApp } 
 import { settingsApi } from '../api/settings';
 import { expensesApi } from '../api/expenses';
 import { categoriesApi } from '../api/categories';
+import type { Category } from '../types';
+
+function effectiveCategoryBudget(category: Category): number {
+    return category.plannedBudget ?? category.subcategories.reduce((sum, s) => sum + (s.plannedBudget ?? 0), 0);
+}
 
 function Dashboard() {
     const queryClient = useQueryClient();
@@ -42,7 +47,7 @@ function Dashboard() {
     const budget = settings?.plannedConstructionCost ?? 0;
     const plannedFromCategories = (categories ?? [])
         .filter((c) => c.name !== 'Zemljište')
-        .reduce((sum, c) => sum + (c.plannedBudget ?? 0), 0);
+        .reduce((sum, c) => sum + effectiveCategoryBudget(c), 0);
     const spent = (expenses ?? [])
         .filter((e) => e.categoryName !== 'Zemljište' && e.status === 'PAID')
         .reduce((sum, e) => sum + e.amount, 0);
@@ -53,7 +58,7 @@ function Dashboard() {
     const isSpentOverBudget = budget > 0 && spent > budget;
 
     const selectedCategory = categories?.find((c) => c.id === selectedCategoryId);
-    const categoryPlanned = selectedCategory?.plannedBudget ?? 0;
+    const categoryPlanned = selectedCategory ? effectiveCategoryBudget(selectedCategory) : 0;
     const categorySpent = (expenses ?? [])
         .filter((e) => e.categoryId === selectedCategoryId && e.status === 'PAID')
         .reduce((sum, e) => sum + e.amount, 0);
