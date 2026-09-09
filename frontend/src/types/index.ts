@@ -78,6 +78,8 @@ export interface TodoItem {
     title: string;
     done: boolean;
     dueDate: string | null;
+    createdAt: string;
+    finishedAt: string | null;
 }
 
 export interface TodoItemRequest {

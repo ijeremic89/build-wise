@@ -10,6 +10,7 @@ import ExpenseDetail from './pages/ExpenseDetail.tsx';
 import Contractors from './pages/Contractors';
 import ContractorDetail from './pages/ContractorDetail';
 import Todos from './pages/Todos';
+import TodoDetail from './pages/TodoDetail';
 import { CategoryIconSprite } from './components/CategoryIcon';
 
 const NACRT_THEME = {
@@ -107,6 +108,7 @@ function App() {
                         <Route path="/contractors" element={<Contractors />} />
                         <Route path="/contractors/:id" element={<ContractorDetail />} />
                         <Route path="/todos" element={<Todos />} />
+                        <Route path="/todos/:id" element={<TodoDetail />} />
                     </Routes>
                 </main>
             </AntApp>

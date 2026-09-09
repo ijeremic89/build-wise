@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -39,6 +40,11 @@ public class TodoItemService {
     public TodoItemDto update(Long id, TodoItemRequest request) {
         TodoItem item = findOwnedOrThrow(id);
         item.setTitle(request.title());
+        if (request.done() && !item.isDone()) {
+            item.setFinishedAt(LocalDateTime.now());
+        } else if (!request.done() && item.isDone()) {
+            item.setFinishedAt(null);
+        }
         item.setDone(request.done());
         item.setDueDate(request.dueDate());
         return TodoItemDto.from(item);
