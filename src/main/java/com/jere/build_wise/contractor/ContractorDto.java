@@ -6,6 +6,8 @@ public record ContractorDto(
         String companyName,
         String phone,
         String email,
+        String oib,
+        String address,
         String note
 ) {
     public static ContractorDto from(Contractor c) {
@@ -15,6 +17,8 @@ public record ContractorDto(
                 c.getCompanyName(),
                 c.getPhone(),
                 c.getEmail(),
+                c.getOib(),
+                c.getAddress(),
                 c.getNote()
         );
     }

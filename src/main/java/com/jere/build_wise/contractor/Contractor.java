@@ -35,6 +35,12 @@ public class Contractor {
     @Column(length = 255)
     private String email;
 
+    @Column(length = 20)
+    private String oib;
+
+    @Column(length = 255)
+    private String address;
+
     @Column(columnDefinition = "TEXT")
     private String note;
 

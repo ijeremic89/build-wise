@@ -62,6 +62,8 @@ export interface Contractor {
     companyName: string | null;
     phone: string | null;
     email: string | null;
+    oib: string | null;
+    address: string | null;
     note: string | null;
 }
 
@@ -70,6 +72,8 @@ export interface ContractorRequest {
     companyName?: string | null;
     phone?: string | null;
     email?: string | null;
+    oib?: string | null;
+    address?: string | null;
     note?: string | null;
 }
 

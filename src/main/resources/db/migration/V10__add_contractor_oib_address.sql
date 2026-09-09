@@ -1,0 +1,2 @@
+ALTER TABLE contractors ADD COLUMN oib VARCHAR(20);
+ALTER TABLE contractors ADD COLUMN address VARCHAR(255);

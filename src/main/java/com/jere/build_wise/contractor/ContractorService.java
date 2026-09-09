@@ -33,6 +33,8 @@ public class ContractorService {
         contractor.setCompanyName(request.companyName());
         contractor.setPhone(request.phone());
         contractor.setEmail(request.email());
+        contractor.setOib(request.oib());
+        contractor.setAddress(request.address());
         contractor.setNote(request.note());
 
         return ContractorDto.from(contractorRepository.save(contractor));
@@ -44,6 +46,8 @@ public class ContractorService {
         contractor.setCompanyName(request.companyName());
         contractor.setPhone(request.phone());
         contractor.setEmail(request.email());
+        contractor.setOib(request.oib());
+        contractor.setAddress(request.address());
         contractor.setNote(request.note());
         return ContractorDto.from(contractor);
     }

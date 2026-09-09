@@ -34,6 +34,8 @@ function Contractors() {
                 companyName: values.companyName?.trim() || null,
                 phone: values.phone?.trim() || null,
                 email: values.email?.trim() || null,
+                oib: values.oib?.trim() || null,
+                address: values.address?.trim() || null,
                 note: values.note?.trim() || null,
             });
         });
@@ -101,6 +103,12 @@ function Contractors() {
                         rules={[{ type: 'email', message: 'Unesi ispravan email' }]}
                     >
                         <Input placeholder="Email (opcionalno)" />
+                    </Form.Item>
+                    <Form.Item name="oib" label="OIB">
+                        <Input placeholder="OIB (opcionalno)" />
+                    </Form.Item>
+                    <Form.Item name="address" label="Adresa">
+                        <Input placeholder="Adresa (opcionalno)" />
                     </Form.Item>
                     <Form.Item name="note" label="Napomena">
                         <Input.TextArea placeholder="Napomena (opcionalno)" rows={3} />

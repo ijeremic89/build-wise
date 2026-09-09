@@ -61,6 +61,8 @@ function ContractorDetail() {
             companyName: contractor.companyName ?? '',
             phone: contractor.phone ?? '',
             email: contractor.email ?? '',
+            oib: contractor.oib ?? '',
+            address: contractor.address ?? '',
             note: contractor.note ?? '',
         });
         setIsEditOpen(true);
@@ -73,6 +75,8 @@ function ContractorDetail() {
                 companyName: values.companyName?.trim() || null,
                 phone: values.phone?.trim() || null,
                 email: values.email?.trim() || null,
+                oib: values.oib?.trim() || null,
+                address: values.address?.trim() || null,
                 note: values.note?.trim() || null,
             });
         });
@@ -128,6 +132,14 @@ function ContractorDetail() {
                         <div className="nc-row">
                             <span>Email</span>
                             <span className="amt">{contractor.email || '—'}</span>
+                        </div>
+                        <div className="nc-row">
+                            <span>OIB</span>
+                            <span className="amt">{contractor.oib || '—'}</span>
+                        </div>
+                        <div className="nc-row">
+                            <span>Adresa</span>
+                            <span className="amt">{contractor.address || '—'}</span>
                         </div>
                         {contractor.note && (
                             <div className="nc-row">
@@ -209,6 +221,12 @@ function ContractorDetail() {
                         rules={[{ type: 'email', message: 'Unesi ispravan email' }]}
                     >
                         <Input placeholder="Email (opcionalno)" />
+                    </Form.Item>
+                    <Form.Item name="oib" label="OIB">
+                        <Input placeholder="OIB (opcionalno)" />
+                    </Form.Item>
+                    <Form.Item name="address" label="Adresa">
+                        <Input placeholder="Adresa (opcionalno)" />
                     </Form.Item>
                     <Form.Item name="note" label="Napomena">
                         <Input.TextArea placeholder="Napomena (opcionalno)" rows={3} />

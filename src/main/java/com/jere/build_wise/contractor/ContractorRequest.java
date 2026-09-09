@@ -8,5 +8,7 @@ public record ContractorRequest(
         String companyName,
         String phone,
         @Email String email,
+        String oib,
+        String address,
         String note
 ) {}
