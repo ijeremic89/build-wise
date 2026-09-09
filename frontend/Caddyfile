@@ -1,0 +1,13 @@
+{$SITE_ADDRESS:134-122-50-78.nip.io} {
+    encode gzip
+
+    handle /api/* {
+        reverse_proxy backend:8080
+    }
+
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+}

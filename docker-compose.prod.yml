@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: build-wise-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: build-wise
+      POSTGRES_USER: build_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: build-wise-backend
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/build-wise
+      SPRING_DATASOURCE_USERNAME: build_user
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      APP_UPLOAD_DIR: /data/uploads
+    volumes:
+      - uploads_data:/data/uploads
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: build-wise-web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-134-122-50-78.nip.io}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  pg_data:
+  uploads_data:
+  caddy_data:
+  caddy_config:
