@@ -112,3 +112,13 @@ export interface ProjectSettings {
 export interface ProjectSettingsRequest {
     plannedConstructionCost: number;
 }
+
+export interface AuthUser {
+    id: number;
+    email: string;
+}
+
+export interface AuthRequest {
+    email: string;
+    password: string;
+}

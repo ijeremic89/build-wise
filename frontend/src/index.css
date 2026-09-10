@@ -617,3 +617,25 @@ main {
 .mobile-nav a.active {
   color: var(--ink);
 }
+
+.mobile-nav button {
+  display: block;
+  width: 100%;
+  padding: 14px 18px;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-align: left;
+  color: var(--faint);
+  background: none;
+  border: none;
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.mobile-nav button:hover {
+  color: var(--ink);
+}

@@ -1,14 +1,14 @@
 package com.jere.build_wise.user;
 
+import com.jere.build_wise.auth.UserPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CurrentUser {
 
-    // TODO: zamijeniti sa SecurityContextHolder kad dodamo Spring Security
-    private static final Long DEFAULT_USER_ID = 1L;
-
     public Long id() {
-        return DEFAULT_USER_ID;
+        UserPrincipal principal = (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return principal.id();
     }
 }
