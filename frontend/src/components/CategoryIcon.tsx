@@ -12,6 +12,7 @@ const ICON_BY_NAME: Record<string, string> = {
     'Fasada': 'fasada',
     'Namještaj': 'namjestaj',
     'Okućnica': 'okucnica',
+    'Solar/Baterije': 'solar',
 };
 
 export function iconIdForCategory(name: string): string {
@@ -85,6 +86,11 @@ export function CategoryIconSprite() {
                 <symbol id="icon-okucnica" viewBox="0 0 24 24">
                     <circle cx="12" cy="9" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
                     <path d="M12 14.5V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </symbol>
+                <symbol id="icon-solar" viewBox="0 0 24 24">
+                    <rect x="4" y="6" width="16" height="9" fill="none" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M9.3 6v9M14.7 6v9M4 10.5h16" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M12 15v4M9 19h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                 </symbol>
                 <symbol id="icon-default" viewBox="0 0 24 24">
                     <rect x="5" y="5" width="14" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" />
