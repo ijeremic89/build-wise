@@ -52,8 +52,10 @@ function Dashboard() {
         .filter((e) => e.categoryName !== 'Zemljište' && e.status === 'PAID')
         .reduce((sum, e) => sum + e.amount, 0);
 
-    const plannedPercentOfBudget = budget > 0 ? Math.min(100, Math.round((plannedFromCategories / budget) * 100)) : 0;
-    const spentPercentOfBudget = budget > 0 ? Math.min(100, Math.round((spent / budget) * 100)) : 0;
+    const plannedPercentOfBudget = budget > 0 ? Math.round((plannedFromCategories / budget) * 100) : 0;
+    const spentPercentOfBudget = budget > 0 ? Math.round((spent / budget) * 100) : 0;
+    const plannedBarWidth = Math.min(100, plannedPercentOfBudget);
+    const spentBarWidth = Math.min(100, spentPercentOfBudget);
     const isPlannedOverBudget = budget > 0 && plannedFromCategories > budget;
     const isSpentOverBudget = budget > 0 && spent > budget;
 
@@ -62,7 +64,8 @@ function Dashboard() {
     const categorySpent = (expenses ?? [])
         .filter((e) => e.categoryId === selectedCategoryId && e.status === 'PAID')
         .reduce((sum, e) => sum + e.amount, 0);
-    const categoryPercent = categoryPlanned > 0 ? Math.min(100, Math.round((categorySpent / categoryPlanned) * 100)) : 0;
+    const categoryPercent = categoryPlanned > 0 ? Math.round((categorySpent / categoryPlanned) * 100) : 0;
+    const categoryBarWidth = Math.min(100, categoryPercent);
     const categoryIsOver = categoryPlanned > 0 && categorySpent > categoryPlanned;
 
     const openEdit = () => {
@@ -107,11 +110,11 @@ function Dashboard() {
                     <div className="nc-budget-bar">
                         <div
                             className={`nc-budget-bar-planned${isPlannedOverBudget ? ' is-over' : ''}`}
-                            style={{ width: `${plannedPercentOfBudget}%` }}
+                            style={{ width: `${plannedBarWidth}%` }}
                         />
                         <div
                             className={`nc-budget-bar-spent${isSpentOverBudget ? ' is-over' : ''}`}
-                            style={{ width: `${spentPercentOfBudget}%` }}
+                            style={{ width: `${spentBarWidth}%` }}
                         />
                     </div>
                     <div className="nc-budget-caption">
@@ -148,7 +151,7 @@ function Dashboard() {
                         </div>
                         {categoryPlanned > 0 && (
                             <div className={`nc-progress${categoryIsOver ? ' is-over' : ''}`}>
-                                <div style={{ width: `${categoryPercent}%` }} />
+                                <div style={{ width: `${categoryBarWidth}%` }} />
                             </div>
                         )}
                     </div>
